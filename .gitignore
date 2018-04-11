@@ -11,3 +11,5 @@ run
 dist
 motioneye.egg-info
 dropbox.keys
+/docs/api
+/docs/_build
