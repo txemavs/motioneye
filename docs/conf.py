@@ -26,6 +26,7 @@ version = motioneye.VERSION
 add_module_names = False
 autodoc_member_order='groupwise'
 autodoc_mock_imports = ['fcntl', 'pycurl']
+autodoc_default_flags = ['members','private-members','undoc-members']
 autosummary_generate = True
 
 exclude_patterns = ['_build' ]
@@ -36,7 +37,7 @@ html_theme_options = {
     'canonical_url': '',
     'analytics_id': '',
     'logo_only': True,
-    'display_version': True
+    'display_version': False
 }
 
 html_title = "Motioneye %s" % (version)
