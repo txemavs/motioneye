@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 
+'''Platform updates.'''
+
 import datetime
 import logging
 import re
@@ -24,6 +26,13 @@ from tornado import ioloop
 
 
 def get_os_version():
+    '''Get OS version.
+
+    Tries :func:`platformupdate.get_os_version` or :func:`_get_os_version_lsb_release`
+
+    :returns: (name, version)
+    :rtype: ``tuple``
+    '''
     try:
         import platformupdate
         
@@ -34,6 +43,13 @@ def get_os_version():
 
 
 def _get_os_version_lsb_release():
+    '''Get OS version.
+
+    Uses 'lsb_release -sri' or calls :func:`_get_os_version_uname`
+
+    :returns: (name, version)
+    :rtype: ``tuple``
+    '''
     try:
         output = subprocess.check_output('lsb_release -sri', shell=True)
         lines = output.strip().split()
@@ -48,6 +64,13 @@ def _get_os_version_lsb_release():
 
 
 def _get_os_version_uname():
+    '''Get OS version.
+
+    Uses 'uname -rs'  or simply returns ('Linux', '')
+
+    :returns: (name, version)
+    :rtype: ``tuple``
+    '''
     try:
         output = subprocess.check_output('uname -rs', shell=True)
         lines = output.strip().split()
@@ -60,6 +83,16 @@ def _get_os_version_uname():
 
 
 def compare_versions(version1, version2):
+    '''Compare versions.
+
+    :param version1: Version.
+    :type version1: ``string``
+    :param version2: Version.
+    :type version2: ``string``
+    :returns: positive if version1>version2
+    :rtype:``int``
+    '''
+
     version1 = re.sub('[^0-9.]', '', version1)
     version2 = re.sub('[^0-9.]', '', version2)
     
@@ -97,6 +130,11 @@ def compare_versions(version1, version2):
 
 
 def get_all_versions():
+    '''Get all versions.
+
+    :returns: :func:`platformupdate.get_all_versions`
+    :rtype: ``list``
+    '''
     try:
         import platformupdate
 
@@ -107,6 +145,13 @@ def get_all_versions():
 
 
 def perform_update(version):
+    '''Perform update.
+
+    Calls :func:`platformupdate.perform_update`
+
+    :param version: Version.
+    :type version: ``string``    
+    '''
     logging.info('updating to version %(version)s...' % {'version': version})
 
     try:

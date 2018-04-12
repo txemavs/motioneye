@@ -340,6 +340,14 @@ def start_motion():
 
 
 def parse_options(parser, args):
+    '''Add -b option and parse args.
+
+    :param parser: Parser
+    :type parser: ``argparse.ArgumentParser``
+    :param args: Argument list
+    :type args: ``list``
+    '''
+
     parser.add_argument('-b', help='start the server in background (daemonize)',
                         action='store_true', dest='background', default=False)
 
@@ -347,6 +355,20 @@ def parse_options(parser, args):
 
 
 def run():
+    '''Run Motioneye and create a new :class:`tornado.web.Application`
+
+    Calls:
+        - :func:`motioneye.server.configure_signals`
+        - :func:`motioneye.server.make_media_folders`
+        - :func:`motioneye.smbctl.update_mounts` if :data:`motioneye.settings.SMB_SHARES`
+        - :func:`motioneye.server.start_motion`
+        - :func:`motioneye.cleanup.start`
+        - :func:`motioneye.wsswitch.start`
+        - :func:`motioneye.tasks.start`
+        - :func:`motioneye.mjpgclient.start`
+        - :func:`motioneye.smbctl.start`
+    '''
+
     import cleanup
     import mjpgclient
     import motionctl
@@ -419,6 +441,20 @@ def run():
 
 
 def main(parser, args, command):
+    '''Start or stop a :class:`motioneye.server.Daemon` or simply call :func:`motioneye.server.run`
+
+    :param parser: Parser
+    :type parser: ``argparse.ArgumentParser``
+    :param args: Argument list
+    :type args: ``list``
+    :param command: Command
+    :type command: ``string``
+
+    Calls:
+        - :func:`motioneye.server.parse_options`
+        - :func:`motioneye.meyectl.configure_logging`
+        - :func:`motioneye.meyectl.configure_tornado`
+    '''
     import meyectl
     
     options = parse_options(parser, args)

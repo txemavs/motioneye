@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 
+'''Media files.
+'''
+
 import datetime
 import errno
 import fcntl
@@ -78,7 +81,7 @@ FFMPEG_EXT_MAPPING = {
     'hevc': 'mp4'
 }
 
-# a cache of prepared files (whose preparing time is significant)
+#: a cache of prepared files (whose preparing time is significant)
 _prepared_files = {}
 
 _timelapse_process = None
@@ -88,6 +91,13 @@ _ffmpeg_binary_cache = None
 
 
 def findfiles(path):
+    ''' Get files in path.
+
+    :param path: Path
+    :type path: ``string``
+    :returns: File list
+    :rtype: ``list``
+    '''
     files = []
     for name in os.listdir(path):
         # ignore hidden files/dirs and other unwanted files
@@ -106,6 +116,17 @@ def findfiles(path):
 
 
 def _list_media_files(directory, exts, prefix=None):
+    '''List media files.
+
+    :param directory: Path
+    :type directory: ``string``
+    :param exts: Extensions
+    :type exts: ``list``
+    :param prefix: Prefix
+    :type prefix: ``string``
+    :returns: File list
+    :rtype: ``list``
+    '''
     media_files = []
     
     if prefix is not None:
@@ -150,6 +171,15 @@ def _list_media_files(directory, exts, prefix=None):
 
 
 def _remove_older_files(directory, moment, exts):
+    '''Remove older files.
+
+    :param directory: Path
+    :type directory: ``string``
+    :param moment: from timestamp
+    :type moment: ``timestamp``
+    :param exts: Extensions
+    :type exts: ``list``
+    '''
     for (full_path, st) in _list_media_files(directory, exts):
         file_moment = datetime.datetime.fromtimestamp(st.st_mtime)
         if file_moment < moment:
@@ -194,6 +224,11 @@ def _remove_older_files(directory, moment, exts):
 
 
 def find_ffmpeg():
+    '''Find ffmpeg executable.
+
+    :returns: binary, version, codecs
+    :rtype: ``tuple``
+    '''
     global _ffmpeg_binary_cache
     if _ffmpeg_binary_cache:
         return _ffmpeg_binary_cache
@@ -259,6 +294,13 @@ def find_ffmpeg():
 
 
 def cleanup_media(media_type):
+    '''The janitor.
+
+    :param media_type: 'picture' or 'movie'
+    :type media_type: ``string``
+
+    Uses :func:`_remove_older_files`
+    '''
     logging.debug('cleaning up %(media_type)ss...' % {'media_type': media_type})
     
     if media_type == 'picture':
@@ -296,6 +338,16 @@ def cleanup_media(media_type):
 
 
 def make_movie_preview(camera_config, full_path):
+    '''Create movie preview for camera.
+
+    :param camera_config: Configuration
+    :type camera_config: ``dict``
+    :param full_path: Path
+    :type full_path: ``string``
+
+    :returns: Thumb
+    :rtype: ``string``
+    '''
     framerate = camera_config['framerate']
     pre_capture = camera_config['pre_capture']
     offs = pre_capture / framerate
@@ -364,6 +416,17 @@ def make_movie_preview(camera_config, full_path):
 
 
 def list_media(camera_config, media_type, callback, prefix=None):
+    '''Process to retrieve media files and then call a handler.
+
+    :param camera_config: Configuration
+    :type camera_config: ``dict``
+    :param media_type: Media type 'picture' or 'movie'
+    :type media_type: ``string``
+    :param callback: Callback
+    :type callback: ``function``
+    :param prefix: Prefix
+    :type prefix: ``string``
+    '''
     target_dir = camera_config.get('target_dir')
 
     if media_type == 'picture':
@@ -444,12 +507,34 @@ def list_media(camera_config, media_type, callback, prefix=None):
 
 
 def get_media_path(camera_config, path, media_type):
+    '''Get media path.
+
+    :param camera_config: Camera configuration.
+    :type camera_config: ``dict``
+    :param as_lines: Relative path
+    :type as_lines: ``string``
+    :param media_type: Not used? - 'movie' 
+    :type media_type: ``string``
+    :return: Full path.
+    :rtype: ``string``
+    '''
     target_dir = camera_config.get('target_dir')
     full_path = os.path.join(target_dir, path)
     return full_path
 
 
 def get_media_content(camera_config, path, media_type):
+    '''Get media content.
+
+    :param camera_config: Camera configuration.
+    :type camera_config: ``dict``
+    :param as_lines: Relative path
+    :type as_lines: ``string``
+    :param media_type: Not used? - 'picture' 
+    :type media_type: ``string``
+    :return: File read.
+    :rtype: ``string``
+    '''
     target_dir = camera_config.get('target_dir')
 
     full_path = os.path.join(target_dir, path)
@@ -466,6 +551,17 @@ def get_media_content(camera_config, path, media_type):
 
 
 def get_zipped_content(camera_config, media_type, group, callback):
+    '''Get ZIP content process.
+
+    :param camera_config: Camera configuration.
+    :type camera_config: ``dict``
+    :param media_type: 'picture' or 'movie' 
+    :type media_type: ``string``
+    :param group: Prefix for :func:`_list_media_files`
+    :type group: ``string``
+    :param callback: Callback
+    :type callback: ``function``
+    '''
     target_dir = camera_config.get('target_dir')
 
     if media_type == 'picture':
@@ -566,6 +662,18 @@ def get_zipped_content(camera_config, media_type, group, callback):
 
 
 def make_timelapse_movie(camera_config, framerate, interval, group):
+    '''Create a movie from pictures.
+
+    :param camera_config: Camera configuration.
+    :type camera_config: ``dict``
+    :param framerate: Frame rate
+    :type framerate: ``int``
+    :param interval: Picture interval
+    :type interval: ``int``
+    :param group: Prefix for :func:`_list_media_files`
+    :type group: ``string``
+
+    '''
     global _timelapse_process
     global _timelapse_data
     
@@ -765,6 +873,8 @@ def make_timelapse_movie(camera_config, framerate, interval, group):
 
 
 def check_timelapse_movie():
+    '''Check timelapse process progress.
+    '''
     if _timelapse_process:
         if ((hasattr(_timelapse_process, 'poll') and _timelapse_process.poll() is None) or
             (hasattr(_timelapse_process, 'is_alive') and _timelapse_process.is_alive())):

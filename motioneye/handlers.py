@@ -15,6 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 
+'''HTTP request handlers.
+
+.. seealso:: `Tornado Web Server <http://www.tornadoweb.org/en/stable/>`_
+'''
+
 import datetime
 import hashlib
 import json
@@ -47,7 +52,19 @@ import v4l2ctl
 
 
 class BaseHandler(RequestHandler):
+    '''The base handler.
+    
+    :param application: Tornado app.
+    :type application: ``tornado.web.Application``
+    :param request: HTTP request.
+    :type request: ``tornado.httputil.HTTPServerRequest``    
+    '''
     def get_all_arguments(self):
+        '''Get all request parameters including :meth:`get_json`.
+
+        :returns: ``Dictionary.``
+        :rtype: ``dict``
+        '''
         keys = self.request.arguments.keys()
         arguments = dict([(key, self.get_argument(key)) for key in keys])
 
@@ -70,6 +87,11 @@ class BaseHandler(RequestHandler):
         return arguments
     
     def get_json(self):
+        '''Load request body JSON if available.
+        
+        :returns: Dictionary.
+        :rtype: ``dict``
+        '''
         if not hasattr(self, '_json'):
             self._json = None
             if self.request.headers.get('Content-Type', '').startswith('application/json'):
@@ -78,6 +100,17 @@ class BaseHandler(RequestHandler):
         return self._json
     
     def get_argument(self, name, default=None, strip=True):
+        ''' Try to find it in json body, too.
+
+        Overrides :meth:`tornado.web.RequestHandler.get_argument`
+    
+        :param name: Argument name.
+        :type name: ``string``
+        :param default: Default value.
+        :param strip: Strip (not implemented).
+        :type name: ``bool``
+        :returns: Value
+        '''
         def_ = {}
         argument = RequestHandler.get_argument(self, name, default=def_)
         if argument is def_:
@@ -92,12 +125,27 @@ class BaseHandler(RequestHandler):
         return argument
     
     def finish(self, chunk=None):
+        '''Finishes this response, ending the HTTP request.
+        
+        Include Motioneye Server header.
+        Overrides :meth:`tornado.web.RequestHandler.finish`
+
+        :param chunk: Chunk.    
+        '''
         import motioneye
 
         self.set_header('Server', 'motionEye/%s' % motioneye.VERSION)
         RequestHandler.finish(self, chunk=chunk)
 
     def render(self, template_name, content_type='text/html', **context):
+        '''Render template and finish response.
+
+        :param template_name: ``jinja2`` template name
+        :type template_name: ``string``
+        :param content_type: Content type
+        :type content_type: ``string``
+        :param context: Renderer context keyword arguments    
+        '''
         import motioneye
         
         self.set_header('Content-Type', content_type)
@@ -108,6 +156,11 @@ class BaseHandler(RequestHandler):
         self.finish(content)
 
     def finish_json(self, data=None):
+        '''Set JSON content type and dump data.
+
+        :param data: Data  
+        :type data: ``dict``    
+        '''
         if data is None:
             data = {}
 
@@ -219,6 +272,13 @@ class BaseHandler(RequestHandler):
 
 
 class NotFoundHandler(BaseHandler):
+    '''HTTP error 404.
+
+    :param application: Tornado app.
+    :type application: ``tornado.web.Application``
+    :param request: HTTP request.
+    :type request: ``tornado.httputil.HTTPServerRequest``   
+    '''
     def get(self, *args, **kwargs):
         raise HTTPError(404, 'not found')
 
@@ -1687,8 +1747,24 @@ class MovieDownloadHandler(MoviePlaybackHandler):
 
 
 class ActionHandler(BaseHandler):
+    '''Action handler.
+    
+    :param application: Tornado application.
+    :type application: ``tornado.web.Application``
+    :param request: HTTP Request.
+    :type request: ``tornado.httputil.HTTPServerRequest``    
+    '''
     @asynchronous
     def post(self, camera_id, action):
+        '''POST request to execute action on camera. 
+
+        :param camera_id: Camera ID.
+        :type camera_id: ``int``
+        :param action: Action.
+        :type action: ``string``
+        :returns: Action result.
+        :rtype: ``JSON``
+        '''
         camera_id = int(camera_id)
         if camera_id not in config.get_camera_ids():
             raise HTTPError(404, 'no such camera')
@@ -1727,6 +1803,10 @@ class ActionHandler(BaseHandler):
         self.run_command_bg(command)
     
     def run_command_bg(self, command):
+        '''Run command in background.
+
+        Uses ``subprocess.Popen`` and schedules :meth:`check_command` using ``tornado.ioloop.IOLoop``
+        '''
         self.p = subprocess.Popen(command, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
         self.command = command
         
@@ -1734,6 +1814,8 @@ class ActionHandler(BaseHandler):
         self.io_loop.add_timeout(datetime.timedelta(milliseconds=100), self.check_command)
     
     def check_command(self):
+        '''Wait for the ``subprocess.Popen`` command to finish.
+        '''
         exit_status = self.p.poll()
         if exit_status is not None:
             output = self.p.stdout.read()
@@ -1757,13 +1839,31 @@ class ActionHandler(BaseHandler):
             self.io_loop.add_timeout(datetime.timedelta(milliseconds=100), self.check_command)
     
     def snapshot(self, camera_id):
+        '''Do **'snapshot'** action.
+
+        :param camera_id: Camera ID.
+        :type camera_id: ``int``
+        :rtype: ``JSON``
+        '''
         motionctl.take_snapshot(camera_id)
         self.finish_json({})
     
     def record_start(self, camera_id):
+        '''Do **'record_start'** action.
+
+        :param camera_id: Camera ID.
+        :type camera_id: ``int``
+        :rtype: ``JSON``
+        '''
         self.finish_json({})
     
     def record_stop(self, camera_id):
+        '''Do **'record_stop'** action.
+
+        :param camera_id: Camera ID.
+        :type camera_id: ``int``
+        :rtype: ``JSON``
+        '''
         self.finish_json({})
 
 
@@ -1784,6 +1884,18 @@ class PrefsHandler(BaseHandler):
     
 
 class RelayEventHandler(BaseHandler):
+    '''URL **/_relay_event** handler.
+
+    :HTTP arguments:
+        * **event**: 'start', 'stop', 'movie_end', 'picture_save'
+        * **thread_id**
+        * **filename**
+
+    :param application: Tornado app.
+    :type application: ``tornado.web.Application``
+    :param request: HTTP request.
+    :type request: ``tornado.httputil.HTTPServerRequest``   
+    '''
     @BaseHandler.auth(admin=True)
     def post(self):
         event = self.get_argument('event')
@@ -1846,6 +1958,18 @@ class RelayEventHandler(BaseHandler):
 
 
 class LogHandler(BaseHandler):
+    '''URL **/log/<name>** handler.
+
+    :HTTP arguments:
+        * **name**: 'motion'
+
+    Serve log file.
+
+    :param application: Tornado app.
+    :type application: ``tornado.web.Application``
+    :param request: HTTP request.
+    :type request: ``tornado.httputil.HTTPServerRequest``   
+    '''
     LOGS = {
         'motion': (os.path.join(settings.LOG_PATH, 'motion.log'),  'motion.log'),
     }
@@ -1880,6 +2004,17 @@ class LogHandler(BaseHandler):
                 
 
 class UpdateHandler(BaseHandler):
+    '''URL **/update** handler.
+
+    Methods:
+        - GET finds available versions using :func:`motioneye.update.compare_versions`
+        - POST performs the update using :func:`motioneye.update.perform_update`.
+
+    :param application: Tornado app.
+    :type application: ``tornado.web.Application``
+    :param request: HTTP request.
+    :type request: ``tornado.httputil.HTTPServerRequest``   
+    '''
     @BaseHandler.auth(admin=True)
     def get(self):
         logging.debug('listing versions')
@@ -1907,8 +2042,24 @@ class UpdateHandler(BaseHandler):
 
 
 class PowerHandler(BaseHandler):
+    '''URL **/power/<op>** handler.
+
+    :URL parameters:
+        * **<op>**: 'shutdown' or 'reboot'
+
+
+    :param application: Tornado app.
+    :type application: ``tornado.web.Application``
+    :param request: HTTP request.
+    :type request: ``tornado.httputil.HTTPServerRequest``   
+    '''
     @BaseHandler.auth(admin=True)
     def post(self, op):
+        '''Power action requested.
+        
+        :param op: 'shutdown' or 'reboot' .
+        :type op: ``string``
+        '''
         if op == 'shutdown':
             self.shut_down()
             
@@ -1916,15 +2067,26 @@ class PowerHandler(BaseHandler):
             self.reboot()
     
     def shut_down(self):
+        '''Schedule :func:`motioneye.powerctl.shut_down` call.'''
         io_loop = IOLoop.instance()
         io_loop.add_timeout(datetime.timedelta(seconds=2), powerctl.shut_down)
 
     def reboot(self):
+        '''Schedule :func:`motioneye.powerctl.reboot` call.'''
         io_loop = IOLoop.instance()
         io_loop.add_timeout(datetime.timedelta(seconds=2), powerctl.reboot)
 
 
 class VersionHandler(BaseHandler):
+    '''URL **/version** handler.
+
+    Render template 'version.html'.
+
+    :param application: Tornado app.
+    :type application: ``tornado.web.Application``
+    :param request: HTTP request.
+    :type request: ``tornado.httputil.HTTPServerRequest``   
+    '''
     def get(self):
         motion_info = motionctl.find_motion()
         os_version = update.get_os_version()
@@ -1937,8 +2099,16 @@ class VersionHandler(BaseHandler):
     post = get
 
 
-# this will only trigger the login mechanism on the client side, if required 
 class LoginHandler(BaseHandler):
+    '''URL **/login** handler.
+
+    This will only trigger the login mechanism on the client side, if required.
+
+    :param application: Tornado app.
+    :type application: ``tornado.web.Application``
+    :param request: HTTP request.
+    :type request: ``tornado.httputil.HTTPServerRequest``   
+    '''
     @BaseHandler.auth()
     def get(self):
         self.finish_json()

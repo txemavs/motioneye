@@ -14,6 +14,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 
+'''
+Motioneye configuration.
+
+
+'''
 import collections
 import datetime
 import errno
@@ -38,8 +43,11 @@ import uploadservices
 import utils
 import v4l2ctl
 
+#: Camera configuration file name
 _CAMERA_CONFIG_FILE_NAME = 'thread-%(id)s.conf'
+#: Motion configuration file name
 _MAIN_CONFIG_FILE_NAME = 'motion.conf'
+#: Actions
 _ACTIONS = ['lock', 'unlock', 'light_on', 'light_off', 'alarm_on', 'alarm_off',
             'up', 'right', 'down', 'left', 'zoom_in', 'zoom_out',
             'preset1', 'preset2', 'preset3', 'preset4', 'preset5', 'preset6', 'preset7', 'preset8', 'preset9']
@@ -54,7 +62,7 @@ _additional_config_funcs = []
 _additional_structure_cache = {}
 _monitor_command_cache = {}
 
-# when using the following video codecs, the ffmpeg_variable_bitrate parameter appears to have an exponential effect
+#: when using the following video codecs, the ffmpeg_variable_bitrate parameter appears to have an exponential effect
 _EXPONENTIAL_QUALITY_CODECS = ['mpeg4', 'msmpeg4', 'swf', 'flv', 'mov', 'mkv']
 _EXPONENTIAL_QUALITY_FACTOR = 100000  # voodoo
 _EXPONENTIAL_DEF_QUALITY = 511  # about 75%
@@ -125,10 +133,12 @@ _KNOWN_MOTION_OPTIONS = {
 
 
 def additional_section(func):
+    '''Append section.'''
     _additional_section_funcs.append(func)
 
 
 def additional_config(func):
+    '''Append configuration.'''
     _additional_config_funcs.append(func)
 
 
@@ -137,6 +147,13 @@ import tzctl  # @UnusedImport
 
 
 def get_main(as_lines=False):
+    '''Read main config from file.
+
+    :param as_lines: As lines
+    :type as_lines: ``bool``
+    :returns: Configuration options.
+    :rtype: ``dict`` or ``list``
+    '''
     global _main_config_cache
 
     if not as_lines and _main_config_cache is not None:
@@ -191,6 +208,11 @@ def get_main(as_lines=False):
 
 
 def set_main(main_config):
+    '''Write main config to file.
+
+    :param main_config: Configuration
+    :type main_config: ``dict``
+    '''
     global _main_config_cache
 
     main_config = dict(main_config)
@@ -234,6 +256,13 @@ def set_main(main_config):
 
 
 def get_camera_ids(filter_valid=True):
+    '''Read main config from file.
+
+    :param filter_valid: Only valid cameras.
+    :type filter_valid: ``bool``
+    :returns: Cameras
+    :rtype: ``list``
+    '''
     global _camera_ids_cache
 
     if _camera_ids_cache is not None:
@@ -280,6 +309,7 @@ def get_camera_ids(filter_valid=True):
 
 
 def get_enabled_local_motion_cameras():
+    '''Get local cameras.'''
     if not get_main().get('@enabled'):
         return []
 
@@ -289,6 +319,7 @@ def get_enabled_local_motion_cameras():
 
 
 def get_network_shares():
+    '''Get network cameras.'''
     if not get_main().get('@enabled'):
         return []
 
@@ -311,6 +342,14 @@ def get_network_shares():
 
 
 def get_camera(camera_id, as_lines=False):
+    '''Get camera configuration.
+
+    :param as_lines: As lines.
+    :type as_lines: ``bool``
+    :returns: Camera
+    :rtype: ``dict`` or ``list``
+    '''
+
     if not as_lines and camera_id in _camera_config_cache:
         return _camera_config_cache[camera_id]
 
@@ -413,6 +452,13 @@ def get_camera(camera_id, as_lines=False):
 
 
 def set_camera(camera_id, camera_config):
+    '''Set camera.
+
+    :param camera_id: Camera
+    :type camera_id: ``int``
+    :param camera_config: Configuration
+    :type camera_config: ``dict``
+    '''
     camera_config['@id'] = camera_id
     _camera_config_cache[camera_id] = camera_config
 
@@ -518,6 +564,11 @@ def set_camera(camera_id, camera_config):
 
 
 def add_camera(device_details):
+    '''Add camera.
+
+    :param device_details: Details
+    :type device_details: ``dict``
+    '''
     global _camera_ids_cache
 
     proto = device_details['proto']
@@ -617,6 +668,11 @@ def add_camera(device_details):
 
 
 def rem_camera(camera_id):
+    '''Remove camera.
+
+    :param camera_id: Camera
+    :type camera_id: ``int``
+    '''
     global _camera_ids_cache
 
     camera_config_name = _CAMERA_CONFIG_FILE_NAME % {'id': camera_id}
@@ -647,6 +703,13 @@ def rem_camera(camera_id):
 
 
 def main_ui_to_dict(ui):
+    '''Get UI values dict.
+    
+    :param ui: UI dictionary.
+    :type ui: ``dict``
+    :returns: Configuration.
+    :rtype: ``dict``
+    '''
     data = {
         '@show_advanced': ui['show_advanced'],
         '@admin_username': ui['admin_username'],
@@ -692,6 +755,13 @@ def main_ui_to_dict(ui):
 
 
 def main_dict_to_ui(data):
+    '''Get UI values from configuration.
+    
+    :param ui: Configuration.
+    :type ui: ``dict``
+    :returns: UI Dictionary.
+    :rtype: ``dict``
+    '''
     ui = {
         'show_advanced': data['@show_advanced'],
         'admin_username': data['@admin_username'],
@@ -723,6 +793,15 @@ def main_dict_to_ui(data):
 
 
 def motion_camera_ui_to_dict(ui, old_config=None):
+    '''Get configuration from camera UI.
+    
+    :param ui: UI dictionary.
+    :type ui: ``dict``
+    :param old_config: Configuration.
+    :type old_config: ``dict``
+    :returns: Configuration.
+    :rtype: ``dict``
+    '''
     import meyectl
     import smbctl
 
@@ -1119,6 +1198,13 @@ def motion_camera_ui_to_dict(ui, old_config=None):
 
 
 def motion_camera_dict_to_ui(data):
+    '''Get camera UI values from configuration.
+    
+    :param data: Configuration.
+    :type data: ``dict``
+    :returns: UI dictionary.
+    :rtype: ``dict``
+    '''
     import smbctl
 
     ui = {
@@ -1573,6 +1659,15 @@ def motion_camera_dict_to_ui(data):
 
 
 def simple_mjpeg_camera_ui_to_dict(ui, old_config=None):
+    '''Get configuration from MJPEG camera UI.
+    
+    :param ui: UI dictionary.
+    :type ui: ``dict``
+    :param old_config: Configuration.
+    :type old_config: ``dict``
+    :returns: Configuration.
+    :rtype: ``dict``
+    '''
     old_config = dict(old_config or {})
 
     data = {
@@ -1594,6 +1689,13 @@ def simple_mjpeg_camera_ui_to_dict(ui, old_config=None):
 
 
 def simple_mjpeg_camera_dict_to_ui(data):
+    '''Get MJPEG camera UI values from configuration.
+    
+    :param data: Configuration.
+    :type data: ``dict``
+    :returns: UI dictionary.
+    :rtype: ``dict``
+    '''
     ui = {
         'name': data['@name'],
         'enabled': data['@enabled'],
@@ -1617,6 +1719,13 @@ def simple_mjpeg_camera_dict_to_ui(data):
 
 
 def get_action_commands(camera_config):
+    '''Get action commands from :data:`_ACTIONS`.
+
+    :param camera_config: Configuration.
+    :type camera_config: ``dict``
+    :returns: UI dictionary.
+    :rtype: ``dict`` 
+    '''
     camera_id = camera_config['@id']
 
     action_commands = {}
@@ -1635,6 +1744,13 @@ def get_action_commands(camera_config):
 
 
 def get_monitor_command(camera_id):
+    '''Get cached monitor commands for a camera.
+
+    :param camera_id: Camera.
+    :type camera_id: ``int``
+    :returns: Monitor commands.
+    :rtype: ``dict`` 
+    '''
     if camera_id not in _monitor_command_cache:
         path = os.path.join(settings.CONF_PATH, 'monitor_%s' % camera_id)
         if os.access(path, os.X_OK):
@@ -1647,10 +1763,16 @@ def get_monitor_command(camera_id):
 
 
 def invalidate_monitor_commands():
+    '''Clear monitor commands cache.'''
     _monitor_command_cache.clear()
 
 
 def backup():
+    '''Generate configuration backup file.
+
+    :returns: Output.
+    :rtype: ``string`` 
+    '''
     logging.debug('generating config backup file')
 
     if len(os.listdir(settings.CONF_PATH)) > 100:
@@ -1687,6 +1809,13 @@ def backup():
 
 
 def restore(content):
+    '''Restore configuration from backup file.
+
+    :param content: Backup file.
+    :type content: ``body``
+    :returns: Reboot.
+    :rtype: ``dict`` 
+    '''
     global _main_config_cache
     global _camera_config_cache
     global _camera_ids_cache
@@ -1724,6 +1853,7 @@ def restore(content):
 
 
 def invalidate():
+    '''Invalidating config cache.'''
     global _main_config_cache
     global _camera_config_cache
     global _camera_ids_cache
@@ -1737,6 +1867,11 @@ def invalidate():
 
 
 def _value_to_python(value):
+    '''Get python value.
+    
+    :param value: Display Value.
+    :returns: Value.
+    '''
     value_lower = value.lower()
     if value_lower == 'off':
         return False
@@ -1756,6 +1891,12 @@ def _value_to_python(value):
 
 
 def _python_to_value(value):
+    '''Get display value.
+    
+    :param value: Value.
+    :returns: Display value.
+    :rtype: ``string``
+    '''
     if value is True:
         return 'on'
 
@@ -1770,6 +1911,17 @@ def _python_to_value(value):
 
 
 def _conf_to_dict(lines, list_names=None, no_convert=None):
+    '''Parse configuration lines.
+    
+    :param lines: String list.
+    :type lines: ``list``
+    :param list_names: List names.
+    :type list_names: ``list``
+    :param no_convert: No convert names.
+    :type no_convert: ``list``
+    :returns: Ordered dictionary.
+    :rtype: ``collections.OrderedDict``
+    '''
     if list_names is None:
         list_names = []
 
@@ -1812,6 +1964,18 @@ def _conf_to_dict(lines, list_names=None, no_convert=None):
 
 
 def _dict_to_conf(lines, data, list_names=None):
+    '''Add configuration lines from a dict.
+    
+    :param lines: Configuration lines.
+    :type lines: ``list``
+    :param data: Remaining key value pairs.
+    :type data: ``dict``
+    :param list_names: List names.
+    :type list_names: ``list``
+    :returns: Configuration lines.
+    :rtype: ``list``
+    '''
+    
     if list_names is None:
         list_names = []
 
@@ -1913,6 +2077,13 @@ def _dict_to_conf(lines, data, list_names=None):
 
 
 def _set_default_motion(data, old_config_format):
+    '''Set default motion config vaules.
+    
+    :param data: Configuration dict.
+    :type data: ``collections.OrderedDict``
+    :param old_config_format: Old rules.
+    :type old_config_format: ``bool``
+    '''
     data.setdefault('@enabled', True)
 
     data.setdefault('@show_advanced', False)
@@ -1936,6 +2107,13 @@ def _set_default_motion(data, old_config_format):
 
 
 def _set_default_motion_camera(camera_id, data):
+    '''Set default motion options.
+    
+    :param camera_id: Camera ID.
+    :type camera_id: ``int``
+    :param data: Configuration.
+    :type data: ``dict``
+    '''
     data.setdefault('@name', 'Camera' + str(camera_id))
     data.setdefault('@id', camera_id)
 
@@ -2047,11 +2225,25 @@ def _set_default_motion_camera(camera_id, data):
 
 
 def _set_default_simple_mjpeg_camera(camera_id, data):
+    '''Set default MJPEG options.
+    
+    :param camera_id: Camera ID.
+    :type camera_id: ``int``
+    :param data: Configuration.
+    :type data: ``dict``
+    '''
     data.setdefault('@name', 'Camera' + str(camera_id))
     data.setdefault('@id', camera_id)
 
 
 def get_additional_structure(camera, separators=False):
+    '''Get additional config structure options.
+    
+    :param camera_id: Camera ID.
+    :type camera_id: ``int``
+    :param separators: With separators.
+    :type separators: ``bool``
+    '''
     if _additional_structure_cache.get((camera, separators)) is None:
         logging.debug('loading additional config structure for %s, %s separators' % (
             'camera' if camera else 'main',
@@ -2104,6 +2296,13 @@ def get_additional_structure(camera, separators=False):
 
 
 def _get_additional_config(data, camera_id=None):
+    '''Get additional config.
+    
+    :param data: Configuration.
+    :type data: ``dict``
+    :param camera_id: Camera ID.
+    :type camera_id: ``int``
+    '''
     args = [camera_id] if camera_id else []
 
     (sections, configs) = get_additional_structure(camera=bool(camera_id))
@@ -2132,6 +2331,13 @@ def _get_additional_config(data, camera_id=None):
 
 
 def _set_additional_config(data, camera_id=None):
+    '''Set additional config.
+    
+    :param data: Configuration.
+    :type data: ``dict``
+    :param camera_id: Camera ID.
+    :type camera_id: ``int``
+    '''
     args = [camera_id] if camera_id else []
 
     (sections, configs) = get_additional_structure(camera=bool(camera_id))

@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 
+'''Disks and mounts control. 
+'''
+
 import logging
 import os
 import re
@@ -23,6 +26,13 @@ import utils
 
 
 def _list_mounts():
+    '''List mounts.
+
+    Keys ['target', 'mount_point', 'fstype', 'opts']
+
+    :returns: Dict list.
+    :rtype: ``list``
+    '''
     logging.debug('listing mounts...')
     
     seen_targets = set()
@@ -66,6 +76,13 @@ def _list_mounts():
 
 
 def _list_disks():
+    '''List available disks.
+
+    Uses :func:`_list_disks_dev_by_id` or :func:`_list_disks_fdisk`
+
+    :returns: Dict list.
+    :rtype: ``list``
+    '''
     if os.path.exists('/dev/disk/by-id/'):
         return _list_disks_dev_by_id()
     
@@ -74,6 +91,13 @@ def _list_disks():
 
 
 def _list_disks_dev_by_id():
+    '''List disks using `/dev/disk/by-id/`
+
+    Keys ['target', 'bus', 'vendor', 'partitions']
+
+    :returns: Dict list.
+    :rtype: ``list``
+    '''
     logging.debug('listing disks using /dev/disk/by-id/')
     
     disks_by_dev = {}
@@ -150,6 +174,13 @@ def _list_disks_dev_by_id():
 
 
 def _list_disks_fdisk():
+    '''List disks using `fdisk -l`
+
+    Keys ['target', 'bus', 'vendor', 'partitions']
+
+    :returns: Dict list.
+    :rtype: ``list``
+    '''
     try:
         output = subprocess.check_output(['fdisk', '-l'], stderr=utils.DEV_NULL)
     
@@ -216,6 +247,13 @@ def _list_disks_fdisk():
 
 
 def list_mounted_disks():
+    '''List disks and filter out unmounted.
+
+    Uses :func:`_list_disks`
+
+    :returns: Dict list.
+    :rtype: ``list``
+    '''
     mounted_disks = []
     
     try:
@@ -241,6 +279,13 @@ def list_mounted_disks():
 
 
 def list_mounted_partitions():
+    '''List mounted partitions.
+
+    Uses :func:`_list_disks`
+
+    :returns: Dict list.
+    :rtype: ``list``
+    '''
     mounted_partitions = {}
 
     try:

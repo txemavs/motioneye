@@ -15,7 +15,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+'''
+This is the main launch script, function :func:`main` runs MotionEye.
 
+'''
 import argparse
 import logging
 import os.path
@@ -32,6 +35,16 @@ _LOG_FILE = 'motioneye.log'
 
 
 def find_command(command):
+    '''Find the corresponding script.
+
+    (Used in :mod:`motioneye.config`)
+
+    :param command: Command.
+    :type command: ``string``
+    :return: Complete command.
+    :rtype: ``string``
+
+    '''
     if command == 'relayevent':
         relayevent_sh = os.path.join(os.path.dirname(__file__), 'scripts/relayevent.sh')
         
@@ -49,6 +62,10 @@ def find_command(command):
 
 
 def load_settings():
+    '''Parse common command line arguments.
+
+    Sets :mod:`motioneye.settings` variables.
+    '''
     # parse common command line arguments
     
     config_file = None
@@ -156,6 +173,8 @@ def load_settings():
 
 
 def configure_logging(cmd, log_to_file=False):
+    '''Configure ``logging``.
+    '''
     if log_to_file or cmd != 'motioneye':
         fmt = '%(asctime)s: [{cmd}] %(levelname)8s: %(message)s'.format(cmd=cmd)
         
@@ -184,12 +203,26 @@ def configure_logging(cmd, log_to_file=False):
 
 
 def configure_tornado():
+    '''Configure ``tornado.curl_httpclient.CurlAsyncHTTPClient``
+
+    Called from:
+        - :func:`motioneye.sendmail.main`
+        - :func:`motioneye.webhook.main`
+        - :func:`motioneye.shell.main`
+    '''
     from tornado.httpclient import AsyncHTTPClient
 
     AsyncHTTPClient.configure('tornado.curl_httpclient.CurlAsyncHTTPClient', max_clients=16)
 
 
 def make_arg_parser(command=None):
+    '''
+
+    :param command: Command
+    :type command: ``string``
+    :return: Parser
+    :rtype: ``argparse.ArgumentParser``
+    '''
     if command:
         usage = description = epilog = None
         
@@ -224,6 +257,8 @@ def make_arg_parser(command=None):
 
 
 def print_usage_and_exit(code):
+    '''Print usage and exit.
+    '''
     parser = make_arg_parser()
     parser.print_help(sys.stderr)
 
@@ -231,6 +266,8 @@ def print_usage_and_exit(code):
 
 
 def print_version_and_exit():
+    '''Print version and exit
+    '''
     import motioneye
 
     sys.stderr.write('motionEye %s\n' % motioneye.VERSION)
@@ -238,6 +275,16 @@ def print_version_and_exit():
 
 
 def main():
+    '''Check arguments, call :func:`load_settings` and start Motioneye execution
+   
+    Check command and call module:
+
+        - ``startserver``, ``stopserver``: Calls :func:`motioneye.server.main`
+        - ``sendmail``: Calls :func:`motioneye.sendmail.main`
+        - ``webhook``: Calls :func:`motioneye.webhook.main`
+        - ``shell``: Calls :func:`motioneye.shell.main`
+
+    '''
     for a in sys.argv:
         if a == '-v':
             print_version_and_exit()

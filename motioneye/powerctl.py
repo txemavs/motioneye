@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 
+'''System power.
+'''
+
 import logging
 import os
 import subprocess
@@ -22,6 +25,11 @@ import utils
 
 
 def _find_prog(prog):
+    '''Use `witch` system command to locate executable.
+
+    :param prog: command.
+    :type prog: ``string``
+    '''
     try:
         return subprocess.check_output(['which', prog], stderr=utils.DEV_NULL).strip()
     
@@ -30,12 +38,18 @@ def _find_prog(prog):
 
 
 def _exec_prog(prog):
+    '''Execute :func:`os.system` command.
+
+    :param prog: command line.
+    :type prog: ``string``
+    '''
     logging.info('executing "%s"' % prog)
     
     return os.system(prog) == 0
 
 
 def shut_down():
+    '''Shut down the system.'''
     logging.info('shutting down')
     
     prog = _find_prog('poweroff')
@@ -58,6 +72,7 @@ def shut_down():
 
 
 def reboot():
+    '''Reboot the system.'''
     logging.info('rebooting')
     
     prog = _find_prog('reboot')

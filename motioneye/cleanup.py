@@ -15,6 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 
+'''Janitor is called to remove old pictures and movies.
+
+A separate process runs :func:`motioneye.mediafiles.cleanup_media`
+'''
+
 import datetime
 import logging
 import multiprocessing
@@ -31,6 +36,8 @@ _process = None
 
 
 def start():
+    '''Start cleaning every :data:`motioneye.settings.CLEANUP_INTERVAL`
+    '''
     if not settings.CLEANUP_INTERVAL:
         return
 
@@ -40,6 +47,8 @@ def start():
 
 
 def stop():
+    '''Stop cleaning.
+    '''
     global _process
     
     if not running():
@@ -57,10 +66,19 @@ def stop():
 
 
 def running():
+    '''Is the process running?
+
+    :return: Process is alive.
+    :rtype: ``bool``
+
+    '''
+
     return _process is not None and _process.is_alive()
 
 
 def _run_process():
+    '''Launch :func:`_do_cleanup` as a new ``multiprocessing.Process`` 
+    '''
     global _process
     
     io_loop = IOLoop.instance()
@@ -76,9 +94,11 @@ def _run_process():
 
 
 def _do_cleanup():
-    # this will be executed in a separate subprocess
+    '''Do the picture and movie cleaning.
+    This will be executed in a separate subprocess.
+    Ignores the terminate and interrupt signals.
+    '''
     
-    # ignore the terminate and interrupt signals in this subprocess
     signal.signal(signal.SIGINT, signal.SIG_IGN)
     signal.signal(signal.SIGTERM, signal.SIG_IGN)
     
