@@ -15,15 +15,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 
+'''Interactive Console:   
+:func:`main command<motioneye.shell.main>` ``shell``.
+'''
+
 import code
 import logging
 
 
 def parse_options(parser, args):
+    '''Define arguments.
+
+    :param parser: Parser
+    :type parser: ``argparse.ArgumentParser``
+    :param args: Argument list
+    :type args: ``list``
+    '''
     return parser.parse_args(args)
 
 
 def main(parser, args):
+    '''A ``code.interact`` console.'''
     import meyectl
     
     options = parse_options(parser, args)

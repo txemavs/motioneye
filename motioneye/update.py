@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 
-'''Platform updates.'''
+'''Platform version updates.'''
 
 import datetime
 import logging
@@ -85,12 +85,13 @@ def _get_os_version_uname():
 def compare_versions(version1, version2):
     '''Compare versions.
 
-    :param version1: Version.
+    :param version1: Version
     :type version1: ``string``
-    :param version2: Version.
+    :param version2: Version
     :type version2: ``string``
-    :returns: positive if version1>version2
-    :rtype:``int``
+    :returns: Comparison
+    :rtype: ``int``
+
     '''
 
     version1 = re.sub('[^0-9.]', '', version1)

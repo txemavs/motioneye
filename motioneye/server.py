@@ -15,6 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+'''Motioneye server: 
+:func:`main command<motioneye.server.main>` ``startserver`` & ``stopserver``.
+
+Tornado application.
+'''
 import atexit
 import datetime
 import logging
@@ -38,6 +43,14 @@ _CURRENT_PICTURE_REGEX = re.compile('^/picture/\d+/current')
 
 
 class Daemon(object):
+    '''Daemonize a function.
+
+    :param pid_file: File path
+    :type pid_file: ``string``
+    :param run_callback: Probably the :func:`run` function.
+    :type run_callback: ``function``
+
+    '''
     def __init__(self, pid_file, run_callback=None):
         self.pid_file = pid_file
         self.run_callback = run_callback
@@ -164,7 +177,7 @@ def _log_request(handler):
         request_time = 1000.0 * handler.request.request_time()
         log_method("%d %s %.2fms", handler.get_status(),
                    handler._request_summary(), request_time)
-
+#: URL mapping: see :mod:`motioneye.handlers` 
 handler_mapping = [
     (r'^/$', handlers.MainHandler),
     (r'^/manifest.json$', handlers.ManifestHandler),
@@ -192,6 +205,7 @@ handler_mapping = [
 
 
 def configure_signals():
+    '''Set :mod:`signal.signal` bye handlers.'''
     def bye_handler(signal, frame):
         logging.info('interrupt signal received, shutting down...')
 
@@ -209,6 +223,7 @@ def configure_signals():
 
 
 def test_requirements():
+    '''Check directories and modules.'''
     if not os.access(settings.CONF_PATH, os.W_OK):
         logging.fatal('config directory "%s" does not exist or is not writable' % settings.CONF_PATH)
         sys.exit(-1)
@@ -291,6 +306,7 @@ def test_requirements():
 
 
 def make_media_folders():
+    '''Create directories for cameras.'''
     import config
     
     config.get_main()  # just to have main config already loaded
@@ -309,6 +325,10 @@ def make_media_folders():
 
 
 def start_motion():
+    ''' Call :func:`motioneye.motionctl.start`.
+
+    Check is running every :data:`motioneye.settings.MOTION_CHECK_INTERVAL` seconds.
+    '''
     import config
     import motionctl
 
@@ -340,7 +360,10 @@ def start_motion():
 
 
 def parse_options(parser, args):
-    '''Add -b option and parse args.
+    '''Define arguments.
+
+    :Parse:
+        - **-b**: start the server in background (daemonize)
 
     :param parser: Parser
     :type parser: ``argparse.ArgumentParser``

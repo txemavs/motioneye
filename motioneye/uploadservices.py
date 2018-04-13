@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+'''File upload services (FTP, GDrive).'''
+
 import ftplib
 import json
 import logging
@@ -34,6 +36,8 @@ _services = None
 
 
 class UploadService(object):
+    '''Upload service base class.
+    '''
     MAX_FILE_SIZE = 1024 * 1024 * 1024  # 1GB
 
     NAME = 'base'

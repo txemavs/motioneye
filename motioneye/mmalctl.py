@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 
+'''Raspberry Pi Videocore IV GPU support.'''
+
 import logging
 import subprocess
 
@@ -22,9 +24,14 @@ import utils
 
 
 def list_devices():
-    # currently MMAL support is designed specifically for the RPi;
-    # therefore we can rely on the vcgencmd to report MMAL cameras
+    '''List MMAL devices.
 
+    Currently MMAL support is designed specifically for the RPi;
+    therefore we can rely on the vcgencmd to report MMAL cameras
+
+    :returns: Detected camera
+    :rtype: ``list``
+    '''
     logging.debug('listing MMAL devices')
 
     try:

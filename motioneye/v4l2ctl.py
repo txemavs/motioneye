@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 
+'''Video for Linux 2.'''
+
 import fcntl
 import logging
 import os.path
@@ -43,6 +45,11 @@ def find_v4l2_ctl():
 
 
 def list_devices():
+    '''List V4L2 devices.
+
+    :return: Devices
+    :rtype: ``list``
+    '''
     global _resolutions_cache, _ctrls_cache, _ctrl_values_cache
     
     logging.debug('listing V4L2 devices')
@@ -110,6 +117,13 @@ def list_devices():
 
 
 def list_resolutions(device):
+    '''List device resolutions.
+
+    :param command: Device
+    :type command: ``string``
+    :return: Devices
+    :rtype: ``list``
+    '''
     import motionctl
     
     global _resolutions_cache

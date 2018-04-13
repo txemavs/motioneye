@@ -15,6 +15,26 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 
+'''Remote requests.
+
+.. autosummary::
+    :nosignatures:
+    
+    del_media_group
+    del_media_content
+    exec_action
+    get_config
+    get_timelapse_movie
+    get_media_content
+    list
+    list_media
+    set_config
+    set_preview
+    
+
+
+'''
+
 import functools
 import json
 import logging
@@ -30,7 +50,11 @@ _DOUBLE_SLASH_REGEX = re.compile('//+')
 
 def _make_request(scheme, host, port, username, password, path, method='GET', data=None, query=None,
                   timeout=None, content_type=None):
+    '''Make HTTP request.
 
+    :returns: HTTP Request
+    :rtype: ``tornado.httpclient.HTTPRequest``
+    '''
     path = _DOUBLE_SLASH_REGEX.sub('/', path)
     url = '%(scheme)s://%(host)s%(port)s%(path)s' % {
             'scheme': scheme,
@@ -63,6 +87,11 @@ def _make_request(scheme, host, port, username, password, path, method='GET', da
 
 
 def _callback_wrapper(callback):
+    '''Callback wrapper for :meth:`tornado.httpclient.AsyncHTTPClient.fetch`
+
+    :returns: Wrapper
+    :rtype: ``function``
+    '''
     @functools.wraps(callback)
     def wrapper(response):
         try:
@@ -82,6 +111,11 @@ def _callback_wrapper(callback):
 
 
 def pretty_camera_url(local_config, camera=True):
+    '''Get a pretty URL.
+
+    :returns: URL
+    :rtype: ``string``
+    '''
     scheme = local_config.get('@scheme', local_config.get('scheme')) or 'http'
     host = local_config.get('@host', local_config.get('host'))
     port = local_config.get('@port', local_config.get('port'))
@@ -108,6 +142,13 @@ def pretty_camera_url(local_config, camera=True):
 
 
 def _remote_params(local_config):
+    '''Get config parameters.
+
+    :param local_config: Configuration
+    :type local_config: ``dict``
+    :returns: Parameters
+    :rtype: ``list``
+    '''
     params = [
             local_config.get('@scheme', local_config.get('scheme')) or 'http',
             local_config.get('@host', local_config.get('host')),
@@ -127,6 +168,18 @@ def _remote_params(local_config):
 
 
 def list(local_config, callback):
+    '''Request ``/config/list/`` list remote cameras.
+    
+    :param local_config: Configuration
+    :type local_config: ``dict``
+    :param action: Action
+    :type action: ``string``
+    :param callback: Callback
+    :type callback: ``function``
+
+    *HTTP* /config/list/
+        Handler: :meth:`motioneye.handlers.ConfigHandler.list`
+    '''
     scheme, host, port, username, password, path, _ = _remote_params(local_config)
     
     logging.debug('listing remote cameras on %(url)s' % {
@@ -171,6 +224,18 @@ def list(local_config, callback):
     
 
 def get_config(local_config, callback):
+    '''Request ``/config/<id>/get`` camera configuration. 
+
+    :param local_config: Configuration
+    :type local_config: ``dict``
+    :param callback: Callback
+    :type callback: ``function``
+
+    *HTTP* /config/<id>/get
+        - **id**: ``Camera ID`` 
+
+        Handler: :meth:`motioneye.handlers.ConfigHandler.get_config`
+    '''
     scheme, host, port, username, password, path, camera_id = _remote_params(local_config)
      
     logging.debug('getting config for remote camera %(id)s on %(url)s' % {
@@ -209,6 +274,20 @@ def get_config(local_config, callback):
     
 
 def set_config(local_config, ui_config, callback):
+    '''Request ``/config/<id>/set/`` set config for camera.
+
+    :param local_config: Configuration
+    :type local_config: ``dict``
+    :param ui_config: UI Configuration
+    :type ui_config: ``dict``
+    :param callback: Callback
+    :type callback: ``function``
+
+    *HTTP* /config/<id>/set
+        - **id**: ``Camera ID`` 
+
+        Handler: :meth:`motioneye.handlers.ConfigHandler.set_config`
+    '''
     scheme = local_config.get('@scheme', local_config.get('scheme'))
     host = local_config.get('@host', local_config.get('host')) 
     port = local_config.get('@port', local_config.get('port'))
@@ -243,6 +322,20 @@ def set_config(local_config, ui_config, callback):
 
 
 def set_preview(local_config, controls, callback):
+    '''Request ``/config/<id>/set_preview/`` set preview for camera.
+
+    :param local_config: Configuration
+    :type local_config: ``dict``
+    :param controls: Controls
+    :type controls: ``dict``
+    :param callback: Callback
+    :type callback: ``function``
+
+    *HTTP* /config/<id>/set_preview
+        - **id**: ``Camera ID`` 
+
+        Handler: :meth:`motioneye.handlers.ConfigHandler.set_preview`
+    '''
     scheme, host, port, username, password, path, camera_id = _remote_params(local_config)
     
     logging.debug('setting preview for remote camera %(id)s on %(url)s' % {
@@ -301,6 +394,7 @@ def test(local_config, data, callback):
 
 
 def get_current_picture(local_config, width, height, callback):
+    '''Get current picture.'''
     scheme, host, port, username, password, path, camera_id = _remote_params(local_config)
     
 #     logging.debug('getting current picture for remote camera %(id)s on %(url)s' % {
@@ -340,6 +434,24 @@ def get_current_picture(local_config, width, height, callback):
 
 
 def list_media(local_config, media_type, prefix, callback):
+    '''Request ``/<media_type>/<id>/list`` list media files. 
+
+    :param local_config: Configuration
+    :type local_config: ``dict``
+    :param media_type: Media type
+    :type media_type: ``string``
+    :param prefix:Prefix
+    :type prefix: ``string``
+    :param callback: Callback
+    :type callback: ``function``
+
+    *HTTP* /<media_type>/<id>/list
+        - **media_type**: ``picture`` | ``movie``
+        - **id**: ``Camera ID`` 
+        
+        Handler: :class:`PictureHandler<motioneye.handlers.PictureHandler>`
+        | :class:`MovieHandler<motioneye.handlers.MovieHandler>`
+    '''
     scheme, host, port, username, password, path, camera_id = _remote_params(local_config)
     
     logging.debug('getting media list for remote camera %(id)s on %(url)s' % {
@@ -381,6 +493,25 @@ def list_media(local_config, media_type, prefix, callback):
 
 
 def get_media_content(local_config, filename, media_type, callback):
+    '''Request ``/<media_type>/<id>/preview/<filename>`` view media file. 
+
+    :param local_config: Configuration
+    :type local_config: ``dict``
+    :param filename: File name
+    :type filename: ``string``
+    :param media_type: Media type
+    :type media_type: ``string``
+    :param callback: Callback
+    :type callback: ``function``
+
+    *HTTP* /<media_type>/<id>/preview/<filename>
+        - **media_type**: ``picture`` | ``movie``
+        - **id**: ``Camera ID`` 
+        - **filename**: File name 
+
+        Handler: :class:`PictureHandler<motioneye.handlers.PictureHandler>`
+        | :class:`MovieHandler<motioneye.handlers.MovieHandler>`
+    '''
     scheme, host, port, username, password, path, camera_id = _remote_params(local_config)
     
     logging.debug('downloading file %(filename)s of remote camera %(id)s on %(url)s' % {
@@ -585,6 +716,12 @@ def check_timelapse_movie(local_config, group, callback):
 
 
 def get_timelapse_movie(local_config, key, group, callback):
+    '''Request ``/picture/<id>/timelapse/<group>`` get movie.
+
+    *HTTP* /picture/<id>/timelapse/<group>/?key=key
+        - **id**: ``Camera ID``
+        - **group**: Group  
+    '''
     scheme, host, port, username, password, path, camera_id = _remote_params(local_config)
     
     logging.debug('downloading timelapse movie for remote camera %(id)s on %(url)s' % {
@@ -619,6 +756,22 @@ def get_timelapse_movie(local_config, key, group, callback):
 
 
 def get_media_preview(local_config, filename, media_type, width, height, callback):
+    '''``/<media_type>/<id>/preview/<filename>`` Preview media file.
+
+    :param local_config: Configuration
+    :type local_config: ``dict``
+    :param filename: File name
+    :type filename: ``string``
+    :param media_type: Media type
+    :type media_type: ``string``
+    :param callback: Callback
+    :type callback: ``function``
+
+    *HTTP* <media_type>/<id>/preview/<filename>
+        - **media_type**: ``picture`` | ``movie``
+        - **id**: ``Camera ID`` 
+        - **filename**: File name 
+    '''
     scheme, host, port, username, password, path, camera_id = _remote_params(local_config)
     
     logging.debug('getting file preview for %(filename)s of remote camera %(id)s on %(url)s' % {
@@ -658,6 +811,25 @@ def get_media_preview(local_config, filename, media_type, width, height, callbac
 
 
 def del_media_content(local_config, filename, media_type, callback):
+    '''Request ``/<media_type>/<id>/delete/<filename>`` delete media content file.
+
+    :param local_config: Configuration
+    :type local_config: ``dict``
+    :param filename: File name
+    :type filename: ``string``
+    :param media_type: Media type
+    :type media_type: ``string``
+    :param callback: Callback
+    :type callback: ``function``
+
+    *HTTP* <media_type>/<id>/delete/<filename>
+        - **media_type**: ``picture`` | ``movie``
+        - **id**: ``Camera ID`` 
+        - **filename**: File name 
+
+        Handler: :class:`PictureHandler<motioneye.handlers.PictureHandler>`
+        | :class:`MovieHandler<motioneye.handlers.MovieHandler>`
+    '''
     scheme, host, port, username, password, path, camera_id = _remote_params(local_config)
     
     logging.debug('deleting file %(filename)s of remote camera %(id)s on %(url)s' % {
@@ -690,6 +862,25 @@ def del_media_content(local_config, filename, media_type, callback):
 
 
 def del_media_group(local_config, group, media_type, callback):
+    '''Request ``/<media_type>/<id>/delete_all/<group>`` delete media.
+
+    :param local_config: Configuration
+    :type local_config: ``dict``
+    :param group: Group
+    :type group: ``string``
+    :param media_type: Media type
+    :type media_type: ``string``
+    :param callback: Callback
+    :type callback: ``function``
+
+    *HTTP* /<media_type>/<id>/delete_all/<group>
+        - **media_type**: ``picture`` | ``movie``
+        - **id**: ``Camera ID`` 
+        - **group**: Group 
+        
+        Handler: :class:`PictureHandler<motioneye.handlers.PictureHandler>`
+        | :class:`MovieHandler<motioneye.handlers.MovieHandler>`
+    '''
     scheme, host, port, username, password, path, camera_id = _remote_params(local_config)
     
     logging.debug('deleting group "%(group)s" of remote camera %(id)s on %(url)s' % {
@@ -722,6 +913,21 @@ def del_media_group(local_config, group, media_type, callback):
 
 
 def exec_action(local_config, action, callback):
+    '''Request ``/action/<id>/<action>`` execute action.
+
+    :param local_config: Configuration
+    :type local_config: ``dict``
+    :param action: Action
+    :type action: ``string``
+    :param callback: Callback
+    :type callback: ``function``
+
+    *HTTP* /action/<id>/<action>
+        - **id**: Camera id
+        - **action**: Action
+
+        Handler: :class:`motioneye.handlers.ActionHandler`    
+    '''
     scheme, host, port, username, password, path, camera_id = _remote_params(local_config)
     
     logging.debug('executing action "%(action)s" of remote camera %(id)s on %(url)s' % {

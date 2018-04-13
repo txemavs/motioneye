@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 
+'''Utils.'''
+
 import base64
 import datetime
 import functools
@@ -41,6 +43,7 @@ import settings
 _SIGNATURE_REGEX = re.compile('[^a-zA-Z0-9/?_.=&{}\[\]":, -]')
 _SPECIAL_COOKIE_NAMES = {'expires', 'domain', 'path', 'secure', 'httponly'}
 
+#: Mask width
 MASK_WIDTH = 32
 
 DEV_NULL = open('/dev/null', 'w')

@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 
+'''Camera monitoring commands.'''
+
 import logging
 import subprocess
 import time
@@ -22,15 +24,25 @@ import urllib
 
 import config
 
+#: Seconds
+DEFAULT_INTERVAL = 1
 
-DEFAULT_INTERVAL = 1  # seconds
-
+#: Cache
 _monitor_info_cache_by_camera_id = {}
 _last_call_time_by_camera_id = {}
 _interval_by_camera_id = {}
 
 
 def get_monitor_info(camera_id):
+    '''Get camera information.
+
+    Used in :meth:`motioneye.handlers.PictureHandler.current`
+
+    :param command: ``Camera ID``
+    :type command: ``int``   
+    :returns: Monitor info
+    :rtype: ``list``
+    '''
     now = time.time()
     command = config.get_monitor_command(camera_id)
     if command is None:
@@ -50,6 +62,13 @@ def get_monitor_info(camera_id):
 
 
 def _exec_monitor_command(command):
+    '''Open a new ``subprocess.Popen`` process.
+
+    :param command: Command line
+    :type command: ``string``   
+    :returns: (out, interval)
+    :rtype: ``tuple``
+    '''
     process = subprocess.Popen([command], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = process.communicate()
 

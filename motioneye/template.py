@@ -15,6 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 
+'''Jinja2 templates.
+
+Files in ``templates`` folder:
+    - ``base.html``
+    - ``main.html``: See :class:`motioneye.handlers.MainHandler`
+    - ``manifest.json``: See :class:`motioneye.handlers.ManifestHandler`
+    - ``version.html`` :See :class:`motioneye.handlers.VersionHandler`
+'''
+
 from jinja2 import Environment, FileSystemLoader
 
 import settings

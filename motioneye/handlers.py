@@ -15,9 +15,66 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 
-'''HTTP request handlers.
+'''All HTTP request handlers are based on :class:`BaseHandler<motioneye.handlers.BaseHandler>` class.
 
-.. seealso:: `Tornado Web Server <http://www.tornadoweb.org/en/stable/>`_
+URL Mapping
+-----------
+
+Defined in :data:`motioneye.server.handler_mapping`
+    
+.. admonition:: Route table
+
+    +---------------------------------------------+-------------------------------+
+    | Path                                        | Handler class                 |
+    +---------------------------------------------+-------------------------------+
+    | /                                           | :class:`MainHandler`          |
+    +---------------------------------------------+-------------------------------+
+    | /manifest.json                              | :class:`ManifestHandler`      |
+    +---------------------------------------------+-------------------------------+
+    | /config/main/<op>                           |                               |
+    +---------------------------------------------+                               |
+    | /config/<camera_id>/<op>                    |                               |
+    +---------------------------------------------+                               |
+    | /config/<op>                                | :class:`ConfigHandler`        |
+    +---------------------------------------------+-------------------------------+
+    | /picture/<camera_id>/<op>                   |                               |
+    +---------------------------------------------+                               |
+    | /picture/<camera_id>/<op>/<filename>        |                               |
+    +---------------------------------------------+                               |
+    | /picture/<camera_id>/<op>/<group>           | :class:`PictureHandler`       |
+    +---------------------------------------------+-------------------------------+
+    | /movie/<camera_id>/<op>                     |                               |
+    +---------------------------------------------+                               |
+    | /movie/<camera_id>/<op>/<filename>          |                               |
+    +---------------------------------------------+                               |
+    | /movie/<camera_id>/<op>/<group>             | :class:`MovieHandler`         |
+    +---------------------------------------------+-------------------------------+
+    | /movie/<camera_id>/playback/<filename>      | :class:`MoviePlaybackHandler` |
+    +---------------------------------------------+-------------------------------+
+    | /movie/<camera_id>/download/<filename>      | :class:`MovieDownloadHandler` |
+    +---------------------------------------------+-------------------------------+
+    | /action/<camera_id>/<action>                | :class:`ActionHandler`        |
+    +---------------------------------------------+-------------------------------+
+    | /prefs/<key>                                | :class:`PrefsHandler`         |
+    +---------------------------------------------+-------------------------------+
+    | /_relay_event                               | :class:`RelayEventHandler`    |
+    +---------------------------------------------+-------------------------------+
+    | /log/<name>                                 | :class:`LogHandler`           |
+    +---------------------------------------------+-------------------------------+
+    | /update                                     | :class:`UpdateHandler`        |
+    +---------------------------------------------+-------------------------------+
+    | /power/<op>                                 | :class:`PowerHandler`         |
+    +---------------------------------------------+-------------------------------+
+    | /version                                    | :class:`VersionHandler`       |
+    +---------------------------------------------+-------------------------------+
+    | /login                                      | :class:`LoginHandler`         |
+    +---------------------------------------------+-------------------------------+
+    | \*                                          | :class:`NotFoundHandler`      |
+    +---------------------------------------------+-------------------------------+
+
+Request handler classes
+-----------------------
+
 '''
 
 import datetime
@@ -244,6 +301,12 @@ class BaseHandler(RequestHandler):
         
     @staticmethod
     def auth(admin=False, prompt=True):
+        '''Auth decorator.
+
+        :returns: decorator
+        :rtype: ``function``
+
+        '''
         def decorator(func):
             def wrapper(self, *args, **kwargs):
                 _admin = self.get_argument('_admin', None) == 'true'
@@ -272,13 +335,7 @@ class BaseHandler(RequestHandler):
 
 
 class NotFoundHandler(BaseHandler):
-    '''HTTP error 404.
-
-    :param application: Tornado app.
-    :type application: ``tornado.web.Application``
-    :param request: HTTP request.
-    :type request: ``tornado.httputil.HTTPServerRequest``   
-    '''
+    '''HTTP Error ``404``'''
     def get(self, *args, **kwargs):
         raise HTTPError(404, 'not found')
 
@@ -286,7 +343,39 @@ class NotFoundHandler(BaseHandler):
 
 
 class MainHandler(BaseHandler):
+    '''Motioneye.
+
+    HTTP GET:
+        :URL /:
+            The main page
+
+    .. note::
+        
+        :Template: ``main.html``
+
+        :Context:
+            - frame: ``False``
+            - motion_version: :func:`motioneye.motionctl.find_motion`
+            - os_version: :func:`motioneye.update.get_os_version`
+            - enable_update: :data:`motioneye.settings.ENABLE_UPDATE`
+            - enable_reboot: :data:`motioneye.settings.ENABLE_REBOOT`
+            - add_remove_cameras: :data:`motioneye.settings.ADD_REMOVE_CAMERAS`
+            - main_sections: :data:`motioneye.config.get_additional_structure`
+            - camera_sections: :data:`motioneye.config.get_additional_structure`
+            - hostname: :data:`motioneye.settings.SERVER_NAME`
+            - title: :func:`MainHandler.get_argument`
+            - admin_username: :func:`motioneye.config.get_main()` ``.get('@admin_username')``
+            - has_streaming_auth: :func:`motioneye.motionctl.has_streaming_auth`
+            - has_new_movie_format_support: :func:`motioneye.motionctl.has_new_movie_format_support`
+            - has_h264_omx_support: :func:`motioneye.motionctl.has_h264_omx_support`
+            - has_motion: :func:`motioneye.motionctl.find_motion()`
+            - mask_width: :data:`motioneye.utils.MASK_WIDTH`
+    
+    '''
+
     def get(self):
+        '''Render ``main.html``.
+        '''
         # additional config
         main_sections = config.get_additional_structure(camera=False, separators=True)[0]
         camera_sections = config.get_additional_structure(camera=True, separators=True)[0]
@@ -314,6 +403,16 @@ class MainHandler(BaseHandler):
 
 
 class ManifestHandler(BaseHandler):
+    '''Send manifest.json file.
+    
+    HTTP GET:
+        :URL /manifest.json:
+            Static file
+
+    .. note::
+    
+        :Template: ``manifest.json``
+    '''
     def get(self):
         self.set_header('Content-Type', 'application/manifest+json')
         self.set_header('Cache-Control', 'max-age=2592000')  # 30 days
@@ -321,6 +420,17 @@ class ManifestHandler(BaseHandler):
 
 
 class ConfigHandler(BaseHandler):
+    '''Configuration operations.
+
+    HTTP GET|POST:
+        :URL /config/main/<op>:
+            - **op**: ``set`` | ``get``
+        :URL /config/<camera_id>/<op>:
+            - **camera_id**: ``Camera ID``
+            - **op**: ``get`` | ``set`` | ``rem`` | ``set_preview`` | ``test`` | ``authorize``
+        :URL /config/<op>:
+            - **op**: ``add`` | ``list`` | ``backup`` | ``restore``
+    '''
     @asynchronous
     def get(self, camera_id=None, op=None):
         config.invalidate_monitor_commands()
@@ -1019,6 +1129,21 @@ class ConfigHandler(BaseHandler):
 
 
 class PictureHandler(BaseHandler):
+    '''Picture operations.
+
+    HTTP GET|POST:
+        :URL /picture/<camera_id>)/<op>:
+            - **camera_id**: ``Camera ID``
+            - **op**: ``current`` | ``list`` | ``frame``
+        :URL /picture/<camera_id>/<op>/<filename>:
+            - **camera_id**: ``Camera ID``
+            - **op**: ``download`` | ``preview`` | ``delete``
+            - **filename**: File name
+        :URL /picture/<camera_id>/<op>/<group>:
+            - **camera_id**: ``Camera ID``
+            - **op**: ``zipped`` | ``timelapse`` | ``delete_all``
+            - **group**: Group
+    '''
     @asynchronous
     def get(self, camera_id, op, filename=None, group=None):
         if camera_id is not None:
@@ -1147,6 +1272,20 @@ class PictureHandler(BaseHandler):
             raise HTTPError(400, 'unknown operation')
 
     def frame(self, camera_id):
+        '''Render Camera frame.
+        
+        .. note::
+            
+            :Template: ``main.html``
+
+            :Context:
+                - frame: ``True``
+                - camera_id: ``Camera ID`` (``int``),
+                - camera_config: :func:`motioneye.config.get_camera`
+                - title: :func:`PictureHandler.get_argument`
+                - admin_username: :func:`motioneye.config.get_main()` ``.get('@admin_username')``
+                - static_path: ``'../../../static/'``
+        '''
         camera_config = config.get_camera(camera_id)
         
         if (utils.is_local_motion_camera(camera_config) or
@@ -1501,6 +1640,21 @@ class PictureHandler(BaseHandler):
 
 
 class MovieHandler(BaseHandler):
+    '''Movie operations.
+
+    HTTP GET|POST:
+        :URL /movie/<camera_id>)/<op>:
+            - **camera_id**: ``Camera ID``
+            - **op**: ``list``
+        :URL /movie/<camera_id>/<op>/<filename>:
+            - **camera_id**: ``Camera ID``
+            - **op**: ``preview`` | ``delete``
+            - **filename**: File name
+        :URL /movie/<camera_id>/<op>/<group>:
+            - **camera_id**: ``Camera ID``
+            - **op**: ``delete_all``
+            - **group**: Group
+    '''
     @asynchronous
     def get(self, camera_id, op, filename=None):
         if camera_id is not None:
@@ -1740,6 +1894,12 @@ class MoviePlaybackHandler(StaticFileHandler, BaseHandler):
 
 
 class MovieDownloadHandler(MoviePlaybackHandler):
+    '''Special movie operation.
+
+    :URL /movie/<camera_id>/download/<filename>:
+        - **camera_id**: ``Camera ID``
+        - **filename**: File name
+    '''
     def set_extra_headers(self, filename):
         if (self.get_status() in (200, 304)):
             self.set_header('Content-Disposition','attachment; filename=' + self.pretty_filename + ';')
@@ -1747,18 +1907,17 @@ class MovieDownloadHandler(MoviePlaybackHandler):
 
 
 class ActionHandler(BaseHandler):
-    '''Action handler.
-    
-    :param application: Tornado application.
-    :type application: ``tornado.web.Application``
-    :param request: HTTP Request.
-    :type request: ``tornado.httputil.HTTPServerRequest``    
+    '''Actions, see :data:`motioneye.config._ACTIONS`
+
+    :URL /action/<camera_id>/<action>:
+        - **camera_id**: ``Camera ID``
+        - **action**: Any action | snapshot | record_start | record_stop 
     '''
     @asynchronous
     def post(self, camera_id, action):
         '''POST request to execute action on camera. 
 
-        :param camera_id: Camera ID.
+        :param camera_id: ``Camera ID``.
         :type camera_id: ``int``
         :param action: Action.
         :type action: ``string``
@@ -1841,7 +2000,7 @@ class ActionHandler(BaseHandler):
     def snapshot(self, camera_id):
         '''Do **'snapshot'** action.
 
-        :param camera_id: Camera ID.
+        :param camera_id: ``Camera ID``.
         :type camera_id: ``int``
         :rtype: ``JSON``
         '''
@@ -1851,7 +2010,7 @@ class ActionHandler(BaseHandler):
     def record_start(self, camera_id):
         '''Do **'record_start'** action.
 
-        :param camera_id: Camera ID.
+        :param camera_id: ``Camera ID``.
         :type camera_id: ``int``
         :rtype: ``JSON``
         '''
@@ -1860,7 +2019,7 @@ class ActionHandler(BaseHandler):
     def record_stop(self, camera_id):
         '''Do **'record_stop'** action.
 
-        :param camera_id: Camera ID.
+        :param camera_id: ``Camera ID``.
         :type camera_id: ``int``
         :rtype: ``JSON``
         '''
@@ -1958,17 +2117,11 @@ class RelayEventHandler(BaseHandler):
 
 
 class LogHandler(BaseHandler):
-    '''URL **/log/<name>** handler.
+    '''Download log file
 
-    :HTTP arguments:
-        * **name**: 'motion'
-
-    Serve log file.
-
-    :param application: Tornado app.
-    :type application: ``tornado.web.Application``
-    :param request: HTTP request.
-    :type request: ``tornado.httputil.HTTPServerRequest``   
+    HTTP GET:
+        :URL /log/<name>:
+            - **name**: motion
     '''
     LOGS = {
         'motion': (os.path.join(settings.LOG_PATH, 'motion.log'),  'motion.log'),
@@ -2004,16 +2157,14 @@ class LogHandler(BaseHandler):
                 
 
 class UpdateHandler(BaseHandler):
-    '''URL **/update** handler.
+    '''Update versions.
 
-    Methods:
-        - GET finds available versions using :func:`motioneye.update.compare_versions`
-        - POST performs the update using :func:`motioneye.update.perform_update`.
-
-    :param application: Tornado app.
-    :type application: ``tornado.web.Application``
-    :param request: HTTP request.
-    :type request: ``tornado.httputil.HTTPServerRequest``   
+    HTTP GET:
+        :URL /update: Finds available versions using :func:`motioneye.update.compare_versions`
+    
+    HTTP POST:
+        :URL /update: Performs the update using :func:`motioneye.update.perform_update`.
+   
     '''
     @BaseHandler.auth(admin=True)
     def get(self):
@@ -2042,16 +2193,11 @@ class UpdateHandler(BaseHandler):
 
 
 class PowerHandler(BaseHandler):
-    '''URL **/power/<op>** handler.
+    '''Shutdown system.
 
-    :URL parameters:
-        * **<op>**: 'shutdown' or 'reboot'
-
-
-    :param application: Tornado app.
-    :type application: ``tornado.web.Application``
-    :param request: HTTP request.
-    :type request: ``tornado.httputil.HTTPServerRequest``   
+    HTTP POST:
+        :URL /power/<op>:
+            - **op**: ``shutdown`` | ``reboot``
     '''
     @BaseHandler.auth(admin=True)
     def post(self, op):
@@ -2078,14 +2224,20 @@ class PowerHandler(BaseHandler):
 
 
 class VersionHandler(BaseHandler):
-    '''URL **/version** handler.
+    '''Get version page.
 
-    Render template 'version.html'.
+    HTTP GET|POST:
+        :URL /version:
+            Version page
+    
+    .. note::
 
-    :param application: Tornado app.
-    :type application: ``tornado.web.Application``
-    :param request: HTTP request.
-    :type request: ``tornado.httputil.HTTPServerRequest``   
+        :Template: ``version.html``
+
+        :Context:
+            - os_version: :func:`motioneye.update.get_os_version`
+            - motion_version: :func:`motioneye.motionctl.find_motion`
+            - hostname: :func:`socket.gethostname`
     '''
     def get(self):
         motion_info = motionctl.find_motion()
@@ -2100,19 +2252,23 @@ class VersionHandler(BaseHandler):
 
 
 class LoginHandler(BaseHandler):
-    '''URL **/login** handler.
+    '''Authentication.
 
     This will only trigger the login mechanism on the client side, if required.
 
-    :param application: Tornado app.
-    :type application: ``tornado.web.Application``
-    :param request: HTTP request.
-    :type request: ``tornado.httputil.HTTPServerRequest``   
+    HTTP GET:
+        :URL /login:
+            Needs authentication. 
+            
+            .. note::
+                :func:`BaseHandler.auth` decorates :func:`LoginHandler.get`
+
     '''
     @BaseHandler.auth()
     def get(self):
         self.finish_json()
 
     def post(self):
+        '''Pass.'''
         self.set_header('Content-Type', 'text/html')
         self.finish()

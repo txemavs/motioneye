@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 
+'''MJPEG camera client.
+'''
+
 import datetime
 import errno
 import logging
@@ -32,10 +35,26 @@ import utils
 
 
 class MjpgClient(IOStream):
+    '''MJPG stream client.
+    
+    :param camera_id: ``Camera ID``
+    :type camera_id: ``int``
+    :param port: Port number
+    :type port: ``int``
+    :param username: User name
+    :type username: ``string``
+    :param password: Password
+    :type password: ``string``
+    :param auth_mode: Auth mode 'basic' or 'digest'
+    :type auth_mode: ``strinc``
+    '''
     _FPS_LEN = 4
     
-    clients = {}  # dictionary of clients indexed by camera id
-    _last_erroneous_close_time = 0  # helps detecting erroneous connections and restart motion
+    #: dictionary of clients indexed by camera id
+    clients = {}  
+    
+    #: helps detecting erroneous connections and restart motion
+    _last_erroneous_close_time = 0  
 
     def __init__(self, camera_id, port, username, password, auth_mode):
         self._camera_id = camera_id
@@ -55,12 +74,20 @@ class MjpgClient(IOStream):
         self.set_close_callback(self.on_close)
         
     def do_connect(self):
+        '''Connect IOStream.'''
         IOStream.connect(self, ('localhost', self._port), self._on_connect)
 
     def get_port(self):
+        '''Get port number.
+
+        :return: Port number
+        :rtype: ``int``
+        '''
         return self._port
     
     def on_close(self):
+        '''IOStream close event handler.
+        '''
         logging.debug('connection closed for mjpg client for camera %(camera_id)s on port %(port)s' % {
                 'port': self._port, 'camera_id': self._camera_id})
         
@@ -83,19 +110,39 @@ class MjpgClient(IOStream):
             MjpgClient._last_erroneous_close_time = now
     
     def get_last_jpg(self):
+        '''Access to last image.
+        
+        Sets :data:`_last_access` to current :func:`time.time`
+
+        '''
         self._last_access = time.time()
         return self._last_jpg
 
     def get_last_access(self):
+        '''Get last access time.
+
+        :return: :data:`_last_access` value
+        :rtype: ``time``
+        '''
         return self._last_access
 
     def get_last_jpg_time(self):
+        '''Get last JPG access time.
+
+        :return: :data:`_last_jpg_times` value
+        :rtype: ``time``
+        '''
         if not self._last_jpg_times:
             self._last_jpg_times.append(time.time())
 
         return self._last_jpg_times[-1]
 
     def get_fps(self):
+        '''Get FPS.
+
+        :return: Frames per second
+        :rtype: ``int``
+        '''
         if len(self._last_jpg_times) < self._FPS_LEN:
             return 0  # not enough "samples"
         
@@ -105,6 +152,7 @@ class MjpgClient(IOStream):
         return (len(self._last_jpg_times) - 1) / (self._last_jpg_times[-1] - self._last_jpg_times[0])
 
     def _check_error(self):
+        '''Check socket is there and :data:`tornado.iostream.IOStream.error` is None.'''
         if self.socket is None:
             logging.warning('mjpg client connection for camera %(camera_id)s on port %(port)s is closed' % {
                     'port': self._port, 'camera_id': self._camera_id})
@@ -122,6 +170,11 @@ class MjpgClient(IOStream):
         return True
      
     def _error(self, error):
+        '''Log error and close.
+
+        :param error: Error message
+        :type error: ``string``
+        '''
         logging.error('mjpg client for camera %(camera_id)s on port %(port)s error: %(msg)s' % {
                 'port': self._port, 'camera_id': self._camera_id, 'msg': unicode(error)})
         
@@ -132,6 +185,7 @@ class MjpgClient(IOStream):
             pass
     
     def _on_connect(self):
+        '''On stream connection handler.'''
         logging.debug('mjpg client for camera %(camera_id)s connected on port %(port)s' % {
                 'port': self._port, 'camera_id': self._camera_id})
 
@@ -147,12 +201,20 @@ class MjpgClient(IOStream):
         self._seek_http()
 
     def _seek_http(self):
+        '''Check if error and read until HTTP/1.
+
+        Calls :func:`tornado.iostream.IOStream.read_until_regex`
+        '''
         if self._check_error():
             return
         
         self.read_until_regex('HTTP/1.\d \d+ ', self._on_http)
 
     def _on_http(self, data):
+        '''Check if authentication is needed (HTTP 401).
+
+        Starts :func:`_seek_www_authenticate` or skips directly to :func:`_seek_content_length`
+        '''
         if data.endswith('401 '):
             self._seek_www_authenticate()
 
@@ -160,18 +222,29 @@ class MjpgClient(IOStream):
             self._seek_content_length()
 
     def _seek_www_authenticate(self):
+        '''Seek 'WWW-Authenticate:' and call :func:`_on_before_www_authenticate`'''
         if self._check_error():
             return
         
         self.read_until('WWW-Authenticate:', self._on_before_www_authenticate)
 
     def _on_before_www_authenticate(self, data):
+        '''Seek '\r\n' and call :func:`_on_www_authenticate`
+        
+        :param data: Data
+        :type data: ``string``
+        '''
         if self._check_error():
             return
         
         self.read_until('\r\n', self._on_www_authenticate)
     
     def _on_www_authenticate(self, data):
+        '''Send basic/digest authentication and calls func:`_seek_content_length`
+        
+        :param data: Data
+        :type data: ``string``
+        '''
         if self._check_error():
             return
         
@@ -203,18 +276,24 @@ class MjpgClient(IOStream):
         self._seek_content_length()
 
     def _seek_content_length(self):
+        ''' Seek 'Content-Length:' and call :func:`_on_before_content_length`'''
         if self._check_error():
             return
         
         self.read_until('Content-Length:', self._on_before_content_length)
     
     def _on_before_content_length(self, data):
+        ''' Seek ''\r\n\r\n' and call :func:`_on_content_length`'''
         if self._check_error():
             return
         
         self.read_until('\r\n\r\n', self._on_content_length)
     
     def _on_content_length(self, data):
+        '''Read all bytes.
+
+        Calls :func:`tornado.iostream.IOStream.read_until_regex`
+        '''
         if self._check_error():
             return
         
@@ -230,6 +309,11 @@ class MjpgClient(IOStream):
         self.read_bytes(length, self._on_jpg)
     
     def _on_jpg(self, data):
+        '''Set last jpg image and :func:`_seek_content_length` again
+
+        :param data: Image
+        :type data: ``bytes``
+        '''
         self._last_jpg = data
         self._last_jpg_times.append(time.time())
         while len(self._last_jpg_times) > self._FPS_LEN:
@@ -239,12 +323,19 @@ class MjpgClient(IOStream):
 
 
 def start():
-    # schedule the garbage collector
+    '''Schedule the first call to :func:`_garbage_collector`.'''
     io_loop = IOLoop.instance()
     io_loop.add_timeout(datetime.timedelta(seconds=settings.MJPG_CLIENT_TIMEOUT), _garbage_collector)
 
 
 def get_jpg(camera_id):
+    '''Call :func:`MjpgClient.get_last_jpg` on client.
+
+    Creates a new  :class:`MjpgClient` instance if ID not in :data:`MjpgClient.clients` keys.
+    
+    :param camera_id: ``Camera ID``
+    :type camera_id: ``int``
+    '''
     if camera_id not in MjpgClient.clients:
         # mjpg client not started yet for this camera
         
@@ -276,6 +367,7 @@ def get_jpg(camera_id):
 
 
 def get_fps(camera_id):
+    '''Call :func:`MjpgClient.get_fps` on client.'''
     client = MjpgClient.clients.get(camera_id)
     if client is None:
         return 0
@@ -284,6 +376,11 @@ def get_fps(camera_id):
     
 
 def close_all(invalidate=False):
+    '''Close all :class:`MjpgClient` clients.
+
+    :param invalidate: Reset :data:`MjpgClient.clients` dictionary.
+    :type invalidate: ``bool``
+    '''
     for client in MjpgClient.clients.values():
         client.close()
     
@@ -293,6 +390,14 @@ def close_all(invalidate=False):
 
 
 def _garbage_collector():
+    '''Garbage collector check for frame and last access timeouts.
+
+    Called periodically every :data:`motioneye.settings.MJPG_CLIENT_TIMEOUT` seconds.
+    
+    Restarts motion if :data:`motioneye.settings.MOTION_RESTART_ON_ERRORS`.
+    This will close all the mjpg clients.
+
+    '''
     io_loop = IOLoop.instance()
     io_loop.add_timeout(datetime.timedelta(seconds=settings.MJPG_CLIENT_TIMEOUT), _garbage_collector)
 
@@ -311,7 +416,7 @@ def _garbage_collector():
                     'camera_id': camera_id, 'port': port})
             
             if settings.MOTION_RESTART_ON_ERRORS:
-                motionctl.stop(invalidate=True)  # this will close all the mjpg clients
+                motionctl.stop(invalidate=True)  
                 motionctl.start(deferred=True)
             
             break

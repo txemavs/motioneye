@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 
+'''A webhook call: 
+:func:`main command<motioneye.webhook.main>` ``webhook``.
+'''
+
 import json
 import logging
 import urllib2
@@ -24,6 +28,17 @@ import settings
 
 
 def parse_options(parser, args):
+    '''Define arguments.
+
+    :Parse:
+        - **method**: the HTTP method to use
+        - **url**: the URL for the request
+
+    :param parser: Parser
+    :type parser: ``argparse.ArgumentParser``
+    :param args: Argument list
+    :type args: ``list``
+    '''
     parser.add_argument('method', help='the HTTP method to use')
     parser.add_argument('url', help='the URL for the request')
 
@@ -31,6 +46,13 @@ def parse_options(parser, args):
 
 
 def main(parser, args):
+    '''Make a webhook request.
+    
+    :param parser: Parser
+    :type parser: ``argparse.ArgumentParser``
+    :param args: Argument list
+    :type args: ``list``
+    '''
     import meyectl
     import utils
     

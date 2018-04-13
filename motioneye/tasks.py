@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 
+'''Tasks.
+'''
 import calendar
 import cPickle
 import datetime
@@ -32,8 +34,8 @@ _INTERVAL = 2
 _STATE_FILE_NAME = 'tasks.pickle'
 _MAX_TASKS = 100
 
-# we must be sure there's only one extra process that handles all tasks
-# TODO replace the pool with one simple thread
+#: we must be sure there's only one extra process that handles all tasks
+#: TODO replace the pool with one simple thread
 _POOL_SIZE = 1
 
 _tasks = []

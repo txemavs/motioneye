@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 
-'''Janitor is called to remove old pictures and movies.
+'''Remove old pictures and movies.
 
-A separate process runs :func:`motioneye.mediafiles.cleanup_media`
+A background process runs :func:`motioneye.mediafiles.cleanup_media`
 '''
 
 import datetime

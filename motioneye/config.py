@@ -14,11 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 
+'''Motioneye configuration :data:`*.conf` files.
 '''
-Motioneye configuration.
 
-
-'''
 import collections
 import datetime
 import errno
@@ -2109,7 +2107,7 @@ def _set_default_motion(data, old_config_format):
 def _set_default_motion_camera(camera_id, data):
     '''Set default motion options.
     
-    :param camera_id: Camera ID.
+    :param camera_id: ``Camera ID``.
     :type camera_id: ``int``
     :param data: Configuration.
     :type data: ``dict``
@@ -2227,7 +2225,7 @@ def _set_default_motion_camera(camera_id, data):
 def _set_default_simple_mjpeg_camera(camera_id, data):
     '''Set default MJPEG options.
     
-    :param camera_id: Camera ID.
+    :param camera_id: ``Camera ID``.
     :type camera_id: ``int``
     :param data: Configuration.
     :type data: ``dict``
@@ -2239,7 +2237,7 @@ def _set_default_simple_mjpeg_camera(camera_id, data):
 def get_additional_structure(camera, separators=False):
     '''Get additional config structure options.
     
-    :param camera_id: Camera ID.
+    :param camera_id: ``Camera ID``.
     :type camera_id: ``int``
     :param separators: With separators.
     :type separators: ``bool``
@@ -2300,7 +2298,7 @@ def _get_additional_config(data, camera_id=None):
     
     :param data: Configuration.
     :type data: ``dict``
-    :param camera_id: Camera ID.
+    :param camera_id: ``Camera ID``.
     :type camera_id: ``int``
     '''
     args = [camera_id] if camera_id else []
@@ -2335,7 +2333,7 @@ def _set_additional_config(data, camera_id=None):
     
     :param data: Configuration.
     :type data: ``dict``
-    :param camera_id: Camera ID.
+    :param camera_id: ``Camera ID``.
     :type camera_id: ``int``
     '''
     args = [camera_id] if camera_id else []

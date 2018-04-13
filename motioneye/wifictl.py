@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 
+'''Wireless network connection manager.'''
+
 import logging
 import re
 import settings
@@ -26,7 +28,7 @@ WPA_SUPPLICANT_CONF = settings.WPA_SUPPLICANT_CONF  # @UndefinedVariable
 
 
 def _get_wifi_settings():
-    # will return the first configured network
+    '''Will return the first configured network.'''
 
     logging.debug('reading wifi settings from %s' % WPA_SUPPLICANT_CONF)
     

@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 
+'''Control :data:`motion` execution.'''
+
 import errno
 import logging
 import os.path
@@ -42,6 +44,10 @@ _motion_detected = {}
 
 
 def find_motion():
+    '''Find motion binary file. 
+
+    See :data:`motioneye.settings.MOTION_BINARY`
+    '''
     global _motion_binary_cache
     if _motion_binary_cache:
         return _motion_binary_cache
@@ -77,6 +83,11 @@ def find_motion():
 
 
 def start(deferred=False):
+    '''Execute motion.
+
+    Check :func:`motioneye.config.get_enabled_local_motion_cameras`, 
+    use :func:`find_motion` and :func:`_disable_initial_motion_detection`
+    '''
     import config
     import mjpgclient
     
@@ -409,10 +420,12 @@ def get_rtsp_support():
 
 
 def needs_ffvb_quirks():
-    # versions below 4.0 require a value range of 1..32767
-    # for the ffmpeg_variable_bitrate parameter;
-    # also the quality is non-linear in this range
-    
+    '''ffvb quirks
+
+    Versions below 4.0 require a value range of 1..32767
+    for the ffmpeg_variable_bitrate parameter;
+    also the quality is non-linear in this range
+    '''
     binary, version = find_motion()
     if not binary:
         return False
@@ -421,9 +434,11 @@ def needs_ffvb_quirks():
 
 
 def resolution_is_valid(width, height):
-    # versions below 3.4 require width and height to be modulo 16;
-    # newer versions require them to be modulo 8
+    '''
 
+    Versions below 3.4 require width and height to be modulo 16;
+    newer versions require them to be modulo 8
+    '''
     modulo = 8
     binary, version = find_motion()  # @UnusedVariable
     if version and not version.lower().count('git') and update.compare_versions(version, '3.4') < 0:

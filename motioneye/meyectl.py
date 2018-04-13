@@ -15,10 +15,12 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-'''
-This is the main launch script, function :func:`main` runs MotionEye.
 
 '''
+This is the :func:`main MotionEye launch<motioneye.meyectl.main>` 
+entry script.
+'''
+
 import argparse
 import logging
 import os.path

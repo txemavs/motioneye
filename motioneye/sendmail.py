@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 
+'''Send email notifications:  
+:func:`main command<motioneye.sendmail.main>` ``sendmail``
+'''
+
 import datetime
 import logging
 import os
@@ -148,6 +152,26 @@ def make_message(subject, message, camera_id, moment, timespan, callback):
 
 
 def parse_options(parser, args):
+    '''Define arguments.
+
+    :Parse:
+        - **server**: the HTTP method to use
+        - **port**: port for the SMTP connection
+        - **account**: SMTP account name (username)
+        - **password**: SMTP account password
+        - **tls**: ``true`` to use TLS
+        - **from**: the email from field
+        - **to**: the email recipient(s)
+        - **msg_id**: the identifier of the message
+        - **thread_id**: the id of the motion thread
+        - **moment**: the moment in ISO-8601 format
+        - **timespan**: picture collection time span
+
+    :param parser: Parser
+    :type parser: ``argparse.ArgumentParser``
+    :param args: Argument list
+    :type args: ``list``
+    '''
     parser.add_argument('server', help='address of the SMTP server')
     parser.add_argument('port', help='port for the SMTP connection')
     parser.add_argument('account', help='SMTP account name (username)')
