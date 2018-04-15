@@ -1,0 +1,6 @@
+{
+    "source": {
+        "include": ["main.js", "ui.js"],
+        "exclude": [],
+    }
+}

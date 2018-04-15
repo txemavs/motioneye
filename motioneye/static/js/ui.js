@@ -1095,6 +1095,7 @@ function runModalDialog(options) {
 
     /* popup message */
 
+//Show popup message
 function showPopupMessage(message, type) {
     var container = $('div.popup-message-container');
     var content = $('<span class="popup-message"></span>');

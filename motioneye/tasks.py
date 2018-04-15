@@ -39,7 +39,7 @@ _MAX_TASKS = 100
 ''' We must be sure there's only one extra process that handles all tasks.
 
 .. todo::
-    replace the pool with one simple thread
+    Replace the pool with one simple thread
 '''
 _POOL_SIZE = 1
 

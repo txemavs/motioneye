@@ -49,6 +49,8 @@ Summary
 
    genindex-all
    api/motioneye
+   html
+   js
 
 
 Related Documentation

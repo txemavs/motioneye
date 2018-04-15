@@ -18,6 +18,7 @@ extensions = [
   'sphinx.ext.autodoc',
   'sphinx.ext.autosummary',
   'sphinx.ext.todo',
+  'sphinx_js',
 ]
 
 project = u'Motioneye'
@@ -27,7 +28,7 @@ version = motioneye.VERSION
 add_module_names = False
 autodoc_member_order='groupwise'
 autodoc_mock_imports = ['fcntl', 'pycurl']
-autodoc_default_flags = ['members','private-members','undoc-members']
+autodoc_default_flags = ['members','undoc-members'] #'private-members'
 autosummary_generate = True
 
 exclude_patterns = ['_build' ]
@@ -49,6 +50,8 @@ html_use_index = True
 html_split_index = True
 html_show_sourcelink = False
 htmlhelp_basename = 'meyedoc'
+
+js_source_path = '../motioneye/static/js'
 
 master_doc = 'index'
 modindex_common_prefix = ['motioneye.']

@@ -390,6 +390,15 @@ function isAdmin() {
     return username === adminUsername;
 }
 
+/** 
+ * XHR request 
+ * @param {String} method
+ * @param {String} url
+ * @param {String} data
+ * @param {Function} callback
+ * @param {String} error
+ * @param {String} timeout
+**/
 function ajax(method, url, data, callback, error, timeout) {
     var origUrl = url;
     var origData = data;
@@ -529,6 +538,7 @@ function authorizeUpload() {
 
     /* UI */
 
+/** UI Creation. **/
 function initUI() {
     /* checkboxes */
     makeCheckBox($('input[type=checkbox].styled'));
