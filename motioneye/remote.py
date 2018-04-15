@@ -178,7 +178,7 @@ def list(local_config, callback):
     :type callback: ``function``
 
     *HTTP* /config/list/
-        Handler: :meth:`motioneye.handlers.ConfigHandler.list`
+        Handler: :meth:`.handlers.ConfigHandler.list`
     '''
     scheme, host, port, username, password, path, _ = _remote_params(local_config)
     
@@ -232,9 +232,9 @@ def get_config(local_config, callback):
     :type callback: ``function``
 
     *HTTP* /config/<id>/get
-        - **id**: ``Camera ID`` 
+        - **id**: `Camera ID` 
 
-        Handler: :meth:`motioneye.handlers.ConfigHandler.get_config`
+        Handler: :meth:`.handlers.ConfigHandler.get_config`
     '''
     scheme, host, port, username, password, path, camera_id = _remote_params(local_config)
      
@@ -284,9 +284,9 @@ def set_config(local_config, ui_config, callback):
     :type callback: ``function``
 
     *HTTP* /config/<id>/set
-        - **id**: ``Camera ID`` 
+        - **id**: `Camera ID` 
 
-        Handler: :meth:`motioneye.handlers.ConfigHandler.set_config`
+        Handler: :meth:`.handlers.ConfigHandler.set_config`
     '''
     scheme = local_config.get('@scheme', local_config.get('scheme'))
     host = local_config.get('@host', local_config.get('host')) 
@@ -332,9 +332,9 @@ def set_preview(local_config, controls, callback):
     :type callback: ``function``
 
     *HTTP* /config/<id>/set_preview
-        - **id**: ``Camera ID`` 
+        - **id**: `Camera ID` 
 
-        Handler: :meth:`motioneye.handlers.ConfigHandler.set_preview`
+        Handler: :meth:`.handlers.ConfigHandler.set_preview`
     '''
     scheme, host, port, username, password, path, camera_id = _remote_params(local_config)
     
@@ -447,7 +447,7 @@ def list_media(local_config, media_type, prefix, callback):
 
     *HTTP* /<media_type>/<id>/list
         - **media_type**: ``picture`` | ``movie``
-        - **id**: ``Camera ID`` 
+        - **id**: `Camera ID` 
         
         Handler: :class:`PictureHandler<motioneye.handlers.PictureHandler>`
         | :class:`MovieHandler<motioneye.handlers.MovieHandler>`
@@ -506,7 +506,7 @@ def get_media_content(local_config, filename, media_type, callback):
 
     *HTTP* /<media_type>/<id>/preview/<filename>
         - **media_type**: ``picture`` | ``movie``
-        - **id**: ``Camera ID`` 
+        - **id**: `Camera ID` 
         - **filename**: File name 
 
         Handler: :class:`PictureHandler<motioneye.handlers.PictureHandler>`
@@ -719,7 +719,7 @@ def get_timelapse_movie(local_config, key, group, callback):
     '''Request ``/picture/<id>/timelapse/<group>`` get movie.
 
     *HTTP* /picture/<id>/timelapse/<group>/?key=key
-        - **id**: ``Camera ID``
+        - **id**: `Camera ID`
         - **group**: Group  
     '''
     scheme, host, port, username, password, path, camera_id = _remote_params(local_config)
@@ -769,7 +769,7 @@ def get_media_preview(local_config, filename, media_type, width, height, callbac
 
     *HTTP* <media_type>/<id>/preview/<filename>
         - **media_type**: ``picture`` | ``movie``
-        - **id**: ``Camera ID`` 
+        - **id**: `Camera ID` 
         - **filename**: File name 
     '''
     scheme, host, port, username, password, path, camera_id = _remote_params(local_config)
@@ -824,7 +824,7 @@ def del_media_content(local_config, filename, media_type, callback):
 
     *HTTP* <media_type>/<id>/delete/<filename>
         - **media_type**: ``picture`` | ``movie``
-        - **id**: ``Camera ID`` 
+        - **id**: `Camera ID` 
         - **filename**: File name 
 
         Handler: :class:`PictureHandler<motioneye.handlers.PictureHandler>`
@@ -875,7 +875,7 @@ def del_media_group(local_config, group, media_type, callback):
 
     *HTTP* /<media_type>/<id>/delete_all/<group>
         - **media_type**: ``picture`` | ``movie``
-        - **id**: ``Camera ID`` 
+        - **id**: `Camera ID` 
         - **group**: Group 
         
         Handler: :class:`PictureHandler<motioneye.handlers.PictureHandler>`
@@ -926,7 +926,7 @@ def exec_action(local_config, action, callback):
         - **id**: Camera id
         - **action**: Action
 
-        Handler: :class:`motioneye.handlers.ActionHandler`    
+        Handler: :class:`.handlers.ActionHandler`    
     '''
     scheme, host, port, username, password, path, camera_id = _remote_params(local_config)
     

@@ -14,7 +14,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-'''File upload services (FTP, GDrive).'''
+'''File upload services.
+
+:class:`.UploadService` derived classes:
+
+.. autosummary::
+    :nosignatures:
+    
+    Dropbox
+    FTP
+    GoogleDrive
+    SFTP
+
+'''
 
 import ftplib
 import json
@@ -139,6 +151,7 @@ class UploadService(object):
 
 
 class GoogleDrive(UploadService):
+    '''Service.'''
     NAME = 'gdrive'
 
     AUTH_URL = 'https://accounts.google.com/o/oauth2/auth'
@@ -437,6 +450,7 @@ class GoogleDrive(UploadService):
 
 
 class Dropbox(UploadService):
+    '''Service.'''
     NAME = 'dropbox'
 
     AUTH_URL = 'https://www.dropbox.com/oauth2/authorize'
@@ -612,6 +626,7 @@ class Dropbox(UploadService):
 
 
 class FTP(UploadService):
+    '''Service.'''
     NAME = 'ftp'
     CONN_LIFE_TIME = 60  # don't keep an FTP connection for more than 1 minute
 
@@ -712,6 +727,7 @@ class FTP(UploadService):
 
 
 class SFTP(UploadService):
+    '''Service.'''
     NAME = 'sftp'
 
     def __init__(self, camera_id):

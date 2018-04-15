@@ -37,7 +37,7 @@ import utils
 class MjpgClient(IOStream):
     '''MJPG stream client.
     
-    :param camera_id: ``Camera ID``
+    :param camera_id: `Camera ID`
     :type camera_id: ``int``
     :param port: Port number
     :type port: ``int``
@@ -333,7 +333,7 @@ def get_jpg(camera_id):
 
     Creates a new  :class:`MjpgClient` instance if ID not in :data:`MjpgClient.clients` keys.
     
-    :param camera_id: ``Camera ID``
+    :param camera_id: `Camera ID`
     :type camera_id: ``int``
     '''
     if camera_id not in MjpgClient.clients:
@@ -392,9 +392,9 @@ def close_all(invalidate=False):
 def _garbage_collector():
     '''Garbage collector check for frame and last access timeouts.
 
-    Called periodically every :data:`motioneye.settings.MJPG_CLIENT_TIMEOUT` seconds.
+    Called periodically every :data:`.settings.MJPG_CLIENT_TIMEOUT` seconds.
     
-    Restarts motion if :data:`motioneye.settings.MOTION_RESTART_ON_ERRORS`.
+    Restarts motion if :data:`.settings.MOTION_RESTART_ON_ERRORS`.
     This will close all the mjpg clients.
 
     '''

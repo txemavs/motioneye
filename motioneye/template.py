@@ -19,9 +19,9 @@
 
 Files in ``templates`` folder:
     - ``base.html``
-    - ``main.html``: See :class:`motioneye.handlers.MainHandler`
-    - ``manifest.json``: See :class:`motioneye.handlers.ManifestHandler`
-    - ``version.html`` :See :class:`motioneye.handlers.VersionHandler`
+    - ``main.html``: See :class:`.handlers.MainHandler`
+    - ``manifest.json``: See :class:`.handlers.ManifestHandler`
+    - ``version.html`` :See :class:`.handlers.VersionHandler`
 '''
 
 from jinja2 import Environment, FileSystemLoader

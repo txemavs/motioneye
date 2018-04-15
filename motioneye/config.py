@@ -15,6 +15,180 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 
 '''Motioneye configuration :data:`*.conf` files.
+
+.. seealso::
+    
+    Motion project:
+        * `Config file options <http://www.lavrsen.dk/foswiki/bin/view/Motion/ConfigFileOptions>`_
+        * `Options by topic <http://htmlpreview.github.io/?https://github.com/Motion-Project/motion/blob/4.0/motion_guide.html#Configuration_OptionsTopic>`_
+
+
+Motion configuration options
+----------------------------
+   
+    :options:
+        * ``@admin_username`` 'admin'
+        * ``@admin_password`` ''
+        * ``@enabled`` True
+        * ``@normal_username`` 'user'
+        * ``@normal_password`` ''
+        * ``setup_mode`` 'False'
+
+    :old format:
+        * ``control_port``  :data:`.settings.MOTION_CONTROL_PORT`
+        * ``control_html_output`` True
+        * ``control_localhost`` :data:`.settings.MOTION_CONTROL_LOCALHOST`
+
+    :new format:
+        * ``webcontrol_port`` :data:`.settings.MOTION_CONTROL_PORT`
+        * ``webcontrol_html_output`` True
+        * ``webcontrol_localhost`` :data:`.settings.MOTION_CONTROL_LOCALHOST`
+        * ``webcontrol_parms`` 2 (advanced list available)
+
+
+Camera configuration options
+----------------------------
+
+    :device:
+        * ``@id`` ID Number
+        * ``@name`` 'Camera ID'
+        * ``@enabled``
+        * ``auto_brightness`` False
+        * ``framerate`` 2
+        * ``rotate`` 0
+        
+    :v4l2 device:
+        * ``videodevice`` '/dev/video0'
+        * ``brightness`` 0
+        * ``contrast`` 0
+        * ``saturation`` 0
+        * ``hue`` 0
+        * ``width`` 352
+        * ``height`` 288
+        
+    :file storage:
+        * ``@network_server`` ''
+        * ``@network_share_name`` ''
+        * ``@network_username`` ''
+        * ``@network_password`` ''
+        * ``@storage_device`` 'custom-path'
+        * ``@upload_enabled`` False
+        * ``@upload_movie`` True
+        * ``@upload_picture`` True
+        * ``@upload_service`` 'ftp'
+        * ``@upload_server`` ''
+        * ``@upload_port`` ''
+        * ``@upload_method`` 'POST'
+        * ``@upload_location`` ''
+        * ``@upload_subfolders`` True
+        * ``@upload_username`` ''
+        * ``@upload_password`` ''
+
+    :text overlay:
+        * ``text_double`` False
+        * ``text_left`` '@name'
+        * ``text_right`` '%Y-%m-%d\\n%T'
+        
+    :streaming:
+        * ``@webcam_resolution`` 100
+        * ``@webcam_server_resize`` False
+        * ``stream_auth_method`` 0
+        * ``stream_authentication`` ''
+        * ``stream_localhost`` False
+        * ``stream_maxrate`` 5
+        * ``stream_motion`` False
+        * ``stream_port`` 8080 + 'Camera ID'
+        * ``stream_quality`` 85
+        
+    :still images:
+        * ``@preserve_pictures`` 0
+        * ``@manual_snapshots`` True
+        * ``output_pictures`` False
+        * ``picture_filename`` ''
+        * ``quality`` 85
+        * ``snapshot_interval`` 0
+        * ``snapshot_filename`` ''
+        
+    :movies:
+        * ``@preserve_movies`` 0
+        * ``ffmpeg_output_movies`` False
+        * ``manual_record`` False
+        * ``max_movie_time`` 0
+        * ``movie_filename`` '%Y-%m-%d/%H-%M-%S'
+    
+    :movies (new format):
+        * ``ffmpeg_video_codec`` 'mp4' | 'mp4:h264_omx' if :func:`.motionctl.has_h264_omx_support`
+        * ``ffmpeg_variable_bitrate`` 75 :data:`_EXPONENTIAL_DEF_QUALITY`
+        
+    :motion detection:
+        * ``@motion_detection`` True
+        * ``emulate_motion`` False
+        * ``event_gap`` 30
+        * ``despeckle_filter`` 30
+        * ``ffmpeg_output_debug_movies`` False
+        * ``lightswitch`` 0
+        * ``locate_motion_mode`` False
+        * ``locate_motion_style`` 'redbox'
+        * ``mask_file`` ''
+        * ``minimum_motion_frames`` 20
+        * ``noise_tune`` True
+        * ``noise_level`` 32
+        * ``output_debug_pictures`` False
+        * ``pre_capture`` 1
+        * ``post_capture`` 1
+        * ``smart_mask_speed`` 0
+        * ``text_changes`` False
+        * ``threshold`` 2000
+        
+    :working schedule:
+        * ``@working_schedule`` ''
+        * ``@working_schedule_type`` 'outside'
+    
+    :events:
+        * ``on_event_start`` ''
+        * ``on_event_end`` ''
+        * ``on_movie_end`` ''
+        * ``on_picture_save`` ''
+
+
+Module contents
+---------------
+
+    **Main functions**:
+    
+        .. autosummary::
+            :nosignatures:
+
+            _set_default_motion
+            backup
+            get_action_commands
+            get_main
+            get_monitor_command
+            get_additional_structure
+            restore
+            set_main
+            main_ui_to_dict
+            main_dict_to_ui
+
+    **Camera functions**:
+    
+        .. autosummary::
+            :nosignatures:
+
+            add_camera
+            get_camera_ids
+            get_camera
+            get_camera_ids
+            get_enabled_local_motion_cameras
+            rem_camera
+            set_camera
+            _set_default_motion_camera
+            motion_camera_ui_to_dict
+            motion_camera_dict_to_ui
+            _set_default_simple_mjpeg_camera
+            simple_mjpeg_camera_ui_to_dict
+            simple_mjpeg_camera_dict_to_ui
+
 '''
 
 import collections
@@ -62,10 +236,14 @@ _monitor_command_cache = {}
 
 #: when using the following video codecs, the ffmpeg_variable_bitrate parameter appears to have an exponential effect
 _EXPONENTIAL_QUALITY_CODECS = ['mpeg4', 'msmpeg4', 'swf', 'flv', 'mov', 'mkv']
-_EXPONENTIAL_QUALITY_FACTOR = 100000  # voodoo
-_EXPONENTIAL_DEF_QUALITY = 511  # about 75%
+#: voodoo
+_EXPONENTIAL_QUALITY_FACTOR = 100000
+#: about 75%
+_EXPONENTIAL_DEF_QUALITY = 511
+#: See :func:`.motionctl.needs_ffvb_quirks`
 _MAX_FFMPEG_VARIABLE_BITRATE = 32767
 
+#: Known motion options
 _KNOWN_MOTION_OPTIONS = {
     'auto_brightness',
     'brightness',
@@ -340,7 +518,7 @@ def get_network_shares():
 
 
 def get_camera(camera_id, as_lines=False):
-    '''Get camera configuration.
+    '''Read camera configuration from file.
 
     :param as_lines: As lines.
     :type as_lines: ``bool``
@@ -792,7 +970,7 @@ def main_dict_to_ui(data):
 
 def motion_camera_ui_to_dict(ui, old_config=None):
     '''Get configuration from camera UI.
-    
+
     :param ui: UI dictionary.
     :type ui: ``dict``
     :param old_config: Configuration.
@@ -2107,7 +2285,7 @@ def _set_default_motion(data, old_config_format):
 def _set_default_motion_camera(camera_id, data):
     '''Set default motion options.
     
-    :param camera_id: ``Camera ID``.
+    :param camera_id: `Camera ID`.
     :type camera_id: ``int``
     :param data: Configuration.
     :type data: ``dict``
@@ -2225,7 +2403,7 @@ def _set_default_motion_camera(camera_id, data):
 def _set_default_simple_mjpeg_camera(camera_id, data):
     '''Set default MJPEG options.
     
-    :param camera_id: ``Camera ID``.
+    :param camera_id: `Camera ID`.
     :type camera_id: ``int``
     :param data: Configuration.
     :type data: ``dict``
@@ -2237,7 +2415,7 @@ def _set_default_simple_mjpeg_camera(camera_id, data):
 def get_additional_structure(camera, separators=False):
     '''Get additional config structure options.
     
-    :param camera_id: ``Camera ID``.
+    :param camera_id: `Camera ID`.
     :type camera_id: ``int``
     :param separators: With separators.
     :type separators: ``bool``
@@ -2298,7 +2476,7 @@ def _get_additional_config(data, camera_id=None):
     
     :param data: Configuration.
     :type data: ``dict``
-    :param camera_id: ``Camera ID``.
+    :param camera_id: `Camera ID`.
     :type camera_id: ``int``
     '''
     args = [camera_id] if camera_id else []
@@ -2333,7 +2511,7 @@ def _set_additional_config(data, camera_id=None):
     
     :param data: Configuration.
     :type data: ``dict``
-    :param camera_id: ``Camera ID``.
+    :param camera_id: `Camera ID`.
     :type camera_id: ``int``
     '''
     args = [camera_id] if camera_id else []

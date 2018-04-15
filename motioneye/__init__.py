@@ -16,6 +16,11 @@ Requirements:
 
 .. seealso:: `MotionEye Wiki: Installation <https://github.com/ccrisan/motioneye/wiki/Installation>`_
 
+TODO list
+---------
+
+.. todolist::
+
 '''
 #: Motioneye version
 VERSION = "0.39"

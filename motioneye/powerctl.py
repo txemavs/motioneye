@@ -17,7 +17,7 @@
 
 '''System reboot and shut down.
 
-See :class:`motioneye.handlers.PowerHandler`
+See :class:`.handlers.PowerHandler`
 
 '''
 

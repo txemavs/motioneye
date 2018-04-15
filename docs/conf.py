@@ -53,6 +53,7 @@ htmlhelp_basename = 'meyedoc'
 master_doc = 'index'
 modindex_common_prefix = ['motioneye.']
 
+todo_include_todos = True
 
 def run_apidoc():
     cur_dir = os.path.abspath(os.path.dirname(__file__))

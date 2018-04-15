@@ -15,7 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 
-'''Control :data:`motion` execution.'''
+'''Control :data:`motion` execution.
+
+.. admonition:: Motion Project
+
+    * `Motion configuration <https://motion-project.github.io/motion_config.html>`_
+    * `Motion HTTP API <http://www.lavrsen.dk/foswiki/bin/view/Motion/MotionHttpAPI>`_
+
+Motion control
+--------------
+'''
 
 import errno
 import logging
@@ -46,7 +55,10 @@ _motion_detected = {}
 def find_motion():
     '''Find motion binary file. 
 
-    See :data:`motioneye.settings.MOTION_BINARY`
+    See :data:`.settings.MOTION_BINARY`
+    
+    :returns: (binary, version)
+    :rtype: ``tuple``
     '''
     global _motion_binary_cache
     if _motion_binary_cache:
@@ -85,8 +97,14 @@ def find_motion():
 def start(deferred=False):
     '''Execute motion.
 
-    Check :func:`motioneye.config.get_enabled_local_motion_cameras`, 
+    Check :func:`.config.get_enabled_local_motion_cameras`, 
     use :func:`find_motion` and :func:`_disable_initial_motion_detection`
+
+    Creating default mjpg clients for local camera. 
+    See :func:`mjpgclient.get_jpg`
+
+    :param deferred: Deferred
+    :type deferred: ``bool``
     '''
     import config
     import mjpgclient
@@ -156,8 +174,14 @@ def start(deferred=False):
         for camera in enabled_local_motion_cameras:
             mjpgclient.get_jpg(camera['@id'])
 
-
 def stop(invalidate=False):
+    '''Stop motion.
+    
+    See :func:`mjpgclient.close_all`
+
+    :param invalidate: Invalidate
+    :type invalidate: ``bool``
+    '''
     import mjpgclient
     
     global _started
@@ -204,6 +228,11 @@ def stop(invalidate=False):
 
 
 def running():
+    '''Check motion is running.
+    
+    :returns: pid alive
+    :rtype: ``bool``
+    '''
     pid = _get_pid()
     if pid is None:
         return False
@@ -227,6 +256,19 @@ def started():
 
 
 def get_motion_detection(camera_id, callback):
+    '''Request ``<thread_id>/detection/status`` motion camera. 
+
+    :param local_config: Configuration
+    :type local_config: ``dict``
+    :param callback: Callback
+    :type callback: ``function``
+
+    *HTTP*  127.0.0.1:<port>/<id>/detection/status
+        - **port**: :data:`.settings.MOTION_CONTROL_PORT` 
+        - **id**: Thread ID - :func:`camera_id_to_thread_id` 
+
+        Handler: ``motion``
+    '''
     from tornado.httpclient import HTTPRequest, AsyncHTTPClient
     
     thread_id = camera_id_to_thread_id(camera_id)
@@ -333,10 +375,16 @@ def set_motion_detected(camera_id, motion_detected):
 
 
 def camera_id_to_thread_id(camera_id):
-    import config
+    '''Find the corresponding thread_id.
 
-    # find the corresponding thread_id
-    # (which can be different from camera_id)
+    Which can be different from camera_id.
+
+    :param camera_id: `Camera ID`.
+    :type camera_id: ``int``
+    :returns: `Thread ID`
+    :rtype: ``int``
+    '''
+    import config
         
     main_config = config.get_main()
     threads = main_config.get('thread', [])
@@ -352,6 +400,13 @@ def camera_id_to_thread_id(camera_id):
     
 
 def thread_id_to_camera_id(thread_id):
+    '''Find the corresponding Camera ID.
+
+    :param camera_id: `Thread ID`.
+    :type camera_id: ``int``
+    :returns: `Camera ID`
+    :rtype: ``int``
+    '''
     import config
 
     main_config = config.get_main()
@@ -365,6 +420,13 @@ def thread_id_to_camera_id(thread_id):
 
 
 def has_old_config_format():
+    '''Motion r490 changes config.
+
+    Checks :func: `update.compare_versions`.
+
+    :returns:  `Motion` version > :data:`_LAST_OLD_CONFIG_VERSIONS`
+    :rtype: ``bool``
+    '''
     binary, version = find_motion()
     if not binary:
         return False
@@ -381,10 +443,22 @@ def has_old_config_format():
 
 
 def has_streaming_auth():
+    '''OMX version uses the GPU.
+
+    :returns: New config format
+    :rtype: ``bool``
+    '''
     return not has_old_config_format()
 
 
 def has_new_movie_format_support():
+    '''New movie format.
+
+    Checks :func:`update.compare_versions` > ``3.4``
+    
+    :returns: `Motion` version OK.
+    :rtype: ``bool``
+    '''
     binary, version = find_motion()
     if not binary:
         return False
@@ -393,16 +467,33 @@ def has_new_movie_format_support():
 
 
 def has_h264_omx_support():
+    '''OMX version uses the GPU.
+
+    .. todo:: 
+        Also check for motion codec parameter support.
+    
+    :returns: Enabled
+    :rtype: ``bool``
+    '''
     binary, version, codecs = mediafiles.find_ffmpeg()
     if not binary:
         return False
-
-    # TODO also check for motion codec parameter support
 
     return 'h264_omx' in codecs.get('h264', {}).get('encoders', set())
 
 
 def get_rtsp_support():
+    '''Real Time Streaming Protocol list.
+
+    All git versions are assumed to support both transport protocols.
+
+    Checks :func:`update.compare_versions` > ``3.4``.
+    
+    `RTSP <https://en.wikipedia.org/wiki/Real_Time_Streaming_Protocol>`_
+
+    :returns: ['tcp', 'udp'] or []
+    :rtype: ``list``
+    '''
     binary, version = find_motion()
     if not binary:
         return []
@@ -413,18 +504,25 @@ def get_rtsp_support():
             return ['tcp']
 
     elif version.lower().count('git') or update.compare_versions(version, '3.4') >= 0:
-        return ['tcp', 'udp']  # all git versions are assumed to support both transport protocols
+        return ['tcp', 'udp']  # 
     
     else:  # stable release, should be in the format x.y.z
         return []
 
 
 def needs_ffvb_quirks():
-    '''ffvb quirks
+    '''Variable bitrate option check.
+
+    Checks :func:`update.compare_versions` > ``4.0``
 
     Versions below 4.0 require a value range of 1..32767
     for the ffmpeg_variable_bitrate parameter;
     also the quality is non-linear in this range
+
+    `Motion ffmpeg config <http://www.lavrsen.dk/foswiki/bin/view/Motion/ConfigOptionFfmpegVariableBitrate>`_
+    
+    :returns: `Motion` version > 4
+    :rtype: ``bool``
     '''
     binary, version = find_motion()
     if not binary:
@@ -434,10 +532,13 @@ def needs_ffvb_quirks():
 
 
 def resolution_is_valid(width, height):
-    '''
+    '''Check modulo.
 
     Versions below 3.4 require width and height to be modulo 16;
     newer versions require them to be modulo 8
+    
+    :returns: Resolution is valid
+    :rtype: ``bool``
     '''
     modulo = 8
     binary, version = find_motion()  # @UnusedVariable
@@ -454,6 +555,12 @@ def resolution_is_valid(width, height):
 
 
 def _disable_initial_motion_detection():
+    ''' Disable motion for all local cameras
+    with config setting  ``@motion_detection: False``.
+
+    Checks :func:`.utils.is_local_motion_camera`
+    and calls :func:`set_motion_detection` 
+    '''
     import config
 
     for camera_id in config.get_camera_ids():
@@ -467,9 +574,9 @@ def _disable_initial_motion_detection():
 
 
 def _get_pid():
+    '''Read the pid from ``motion.pid`` file.'''
     motion_pid_path = os.path.join(settings.RUN_PATH, 'motion.pid')
     
-    # read the pid from file
     try:
         with open(motion_pid_path, 'r') as f:
             return int(f.readline().strip())

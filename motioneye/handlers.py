@@ -20,60 +20,59 @@
 URL Mapping
 -----------
 
-Defined in :data:`motioneye.server.handler_mapping`
+Defined in :data:`.server.handler_mapping`
     
-.. admonition:: Route table
 
-    +---------------------------------------------+-------------------------------+
-    | Path                                        | Handler class                 |
-    +---------------------------------------------+-------------------------------+
-    | /                                           | :class:`MainHandler`          |
-    +---------------------------------------------+-------------------------------+
-    | /manifest.json                              | :class:`ManifestHandler`      |
-    +---------------------------------------------+-------------------------------+
-    | /config/main/<op>                           |                               |
-    +---------------------------------------------+                               |
-    | /config/<camera_id>/<op>                    |                               |
-    +---------------------------------------------+                               |
-    | /config/<op>                                | :class:`ConfigHandler`        |
-    +---------------------------------------------+-------------------------------+
-    | /picture/<camera_id>/<op>                   |                               |
-    +---------------------------------------------+                               |
-    | /picture/<camera_id>/<op>/<filename>        |                               |
-    +---------------------------------------------+                               |
-    | /picture/<camera_id>/<op>/<group>           | :class:`PictureHandler`       |
-    +---------------------------------------------+-------------------------------+
-    | /movie/<camera_id>/<op>                     |                               |
-    +---------------------------------------------+                               |
-    | /movie/<camera_id>/<op>/<filename>          |                               |
-    +---------------------------------------------+                               |
-    | /movie/<camera_id>/<op>/<group>             | :class:`MovieHandler`         |
-    +---------------------------------------------+-------------------------------+
-    | /movie/<camera_id>/playback/<filename>      | :class:`MoviePlaybackHandler` |
-    +---------------------------------------------+-------------------------------+
-    | /movie/<camera_id>/download/<filename>      | :class:`MovieDownloadHandler` |
-    +---------------------------------------------+-------------------------------+
-    | /action/<camera_id>/<action>                | :class:`ActionHandler`        |
-    +---------------------------------------------+-------------------------------+
-    | /prefs/<key>                                | :class:`PrefsHandler`         |
-    +---------------------------------------------+-------------------------------+
-    | /_relay_event                               | :class:`RelayEventHandler`    |
-    +---------------------------------------------+-------------------------------+
-    | /log/<name>                                 | :class:`LogHandler`           |
-    +---------------------------------------------+-------------------------------+
-    | /update                                     | :class:`UpdateHandler`        |
-    +---------------------------------------------+-------------------------------+
-    | /power/<op>                                 | :class:`PowerHandler`         |
-    +---------------------------------------------+-------------------------------+
-    | /version                                    | :class:`VersionHandler`       |
-    +---------------------------------------------+-------------------------------+
-    | /login                                      | :class:`LoginHandler`         |
-    +---------------------------------------------+-------------------------------+
-    | \*                                          | :class:`NotFoundHandler`      |
-    +---------------------------------------------+-------------------------------+
++---------------------------------------------+-------------------------------+
+| Path                                        | Handler class                 |
++---------------------------------------------+-------------------------------+
+| ``/``                                       | :class:`MainHandler`          |
++---------------------------------------------+-------------------------------+
+| ``/manifest.json``                          | :class:`ManifestHandler`      |
++---------------------------------------------+-------------------------------+
+| ``/config/main/<op>``                       |                               |
++---------------------------------------------+                               |
+| ``/config/<camera_id>/<op>``                | :class:`ConfigHandler`        |
++---------------------------------------------+                               |
+| ``/config/<op>``                            |                               |
++---------------------------------------------+-------------------------------+
+| ``/picture/<camera_id>/<op>``               |                               |
++---------------------------------------------+                               |
+| ``/picture/<camera_id>/<op>/<filename>``    | :class:`PictureHandler`       |
++---------------------------------------------+                               |
+| ``/picture/<camera_id>/<op>/<group>``       |                               |
++---------------------------------------------+-------------------------------+
+| ``/movie/<camera_id>/<op>``                 |                               |
++---------------------------------------------+                               |
+| ``/movie/<camera_id>/<op>/<filename>``      | :class:`PictureHandler`       |
++---------------------------------------------+                               |
+| ``/movie/<camera_id>/<op>/<group>``         |                               |
++---------------------------------------------+-------------------------------+
+| ``/movie/<camera_id>/playback/<filename>``  | :class:`MoviePlaybackHandler` |
++---------------------------------------------+-------------------------------+
+| ``/movie/<camera_id>/download/<filename>``  | :class:`MovieDownloadHandler` |
++---------------------------------------------+-------------------------------+
+| ``/action/<camera_id>/<action>``            | :class:`ActionHandler`        |
++---------------------------------------------+-------------------------------+
+| ``/prefs/<key>``                            | :class:`PrefsHandler`         |
++---------------------------------------------+-------------------------------+
+| ``/_relay_event``                           | :class:`RelayEventHandler`    |
++---------------------------------------------+-------------------------------+
+| ``/log/<name>``                             | :class:`LogHandler`           |
++---------------------------------------------+-------------------------------+
+| ``/update``                                 | :class:`UpdateHandler`        |
++---------------------------------------------+-------------------------------+
+| ``/power/<op>``                             | :class:`PowerHandler`         |
++---------------------------------------------+-------------------------------+
+| ``/version``                                | :class:`VersionHandler`       |
++---------------------------------------------+-------------------------------+
+| ``/login``                                  | :class:`LoginHandler`         |
++---------------------------------------------+-------------------------------+
+| ``*``                                       | :class:`NotFoundHandler`      |
++---------------------------------------------+-------------------------------+
 
-Request handler classes
------------------------
+Request handlers
+----------------
 
 '''
 
@@ -355,21 +354,21 @@ class MainHandler(BaseHandler):
 
         :Context:
             - frame: ``False``
-            - motion_version: :func:`motioneye.motionctl.find_motion`
-            - os_version: :func:`motioneye.update.get_os_version`
-            - enable_update: :data:`motioneye.settings.ENABLE_UPDATE`
-            - enable_reboot: :data:`motioneye.settings.ENABLE_REBOOT`
-            - add_remove_cameras: :data:`motioneye.settings.ADD_REMOVE_CAMERAS`
-            - main_sections: :data:`motioneye.config.get_additional_structure`
-            - camera_sections: :data:`motioneye.config.get_additional_structure`
-            - hostname: :data:`motioneye.settings.SERVER_NAME`
+            - motion_version: :func:`.motionctl.find_motion`
+            - os_version: :func:`.update.get_os_version`
+            - enable_update: :data:`.settings.ENABLE_UPDATE`
+            - enable_reboot: :data:`.settings.ENABLE_REBOOT`
+            - add_remove_cameras: :data:`.settings.ADD_REMOVE_CAMERAS`
+            - main_sections: :data:`.config.get_additional_structure`
+            - camera_sections: :data:`.config.get_additional_structure`
+            - hostname: :data:`.settings.SERVER_NAME`
             - title: :func:`MainHandler.get_argument`
-            - admin_username: :func:`motioneye.config.get_main()` ``.get('@admin_username')``
-            - has_streaming_auth: :func:`motioneye.motionctl.has_streaming_auth`
-            - has_new_movie_format_support: :func:`motioneye.motionctl.has_new_movie_format_support`
-            - has_h264_omx_support: :func:`motioneye.motionctl.has_h264_omx_support`
-            - has_motion: :func:`motioneye.motionctl.find_motion()`
-            - mask_width: :data:`motioneye.utils.MASK_WIDTH`
+            - admin_username: :func:`.config.get_main()` ``.get('@admin_username')``
+            - has_streaming_auth: :func:`.motionctl.has_streaming_auth`
+            - has_new_movie_format_support: :func:`.motionctl.has_new_movie_format_support`
+            - has_h264_omx_support: :func:`.motionctl.has_h264_omx_support`
+            - has_motion: :func:`.motionctl.find_motion()`
+            - mask_width: :data:`.utils.MASK_WIDTH`
     
     '''
 
@@ -426,7 +425,7 @@ class ConfigHandler(BaseHandler):
         :URL /config/main/<op>:
             - **op**: ``set`` | ``get``
         :URL /config/<camera_id>/<op>:
-            - **camera_id**: ``Camera ID``
+            - **camera_id**: `Camera ID`
             - **op**: ``get`` | ``set`` | ``rem`` | ``set_preview`` | ``test`` | ``authorize``
         :URL /config/<op>:
             - **op**: ``add`` | ``list`` | ``backup`` | ``restore``
@@ -1133,14 +1132,14 @@ class PictureHandler(BaseHandler):
 
     HTTP GET|POST:
         :URL /picture/<camera_id>)/<op>:
-            - **camera_id**: ``Camera ID``
+            - **camera_id**: `Camera ID`
             - **op**: ``current`` | ``list`` | ``frame``
         :URL /picture/<camera_id>/<op>/<filename>:
-            - **camera_id**: ``Camera ID``
+            - **camera_id**: `Camera ID`
             - **op**: ``download`` | ``preview`` | ``delete``
             - **filename**: File name
         :URL /picture/<camera_id>/<op>/<group>:
-            - **camera_id**: ``Camera ID``
+            - **camera_id**: `Camera ID`
             - **op**: ``zipped`` | ``timelapse`` | ``delete_all``
             - **group**: Group
     '''
@@ -1280,10 +1279,10 @@ class PictureHandler(BaseHandler):
 
             :Context:
                 - frame: ``True``
-                - camera_id: ``Camera ID`` (``int``),
-                - camera_config: :func:`motioneye.config.get_camera`
+                - camera_id: `Camera ID` (``int``),
+                - camera_config: :func:`.config.get_camera`
                 - title: :func:`PictureHandler.get_argument`
-                - admin_username: :func:`motioneye.config.get_main()` ``.get('@admin_username')``
+                - admin_username: :func:`.config.get_main()` ``.get('@admin_username')``
                 - static_path: ``'../../../static/'``
         '''
         camera_config = config.get_camera(camera_id)
@@ -1644,14 +1643,14 @@ class MovieHandler(BaseHandler):
 
     HTTP GET|POST:
         :URL /movie/<camera_id>)/<op>:
-            - **camera_id**: ``Camera ID``
+            - **camera_id**: `Camera ID`
             - **op**: ``list``
         :URL /movie/<camera_id>/<op>/<filename>:
-            - **camera_id**: ``Camera ID``
+            - **camera_id**: `Camera ID`
             - **op**: ``preview`` | ``delete``
             - **filename**: File name
         :URL /movie/<camera_id>/<op>/<group>:
-            - **camera_id**: ``Camera ID``
+            - **camera_id**: `Camera ID`
             - **op**: ``delete_all``
             - **group**: Group
     '''
@@ -1897,7 +1896,7 @@ class MovieDownloadHandler(MoviePlaybackHandler):
     '''Special movie operation.
 
     :URL /movie/<camera_id>/download/<filename>:
-        - **camera_id**: ``Camera ID``
+        - **camera_id**: `Camera ID`
         - **filename**: File name
     '''
     def set_extra_headers(self, filename):
@@ -1907,17 +1906,17 @@ class MovieDownloadHandler(MoviePlaybackHandler):
 
 
 class ActionHandler(BaseHandler):
-    '''Actions, see :data:`motioneye.config._ACTIONS`
+    '''Actions, see :data:`.config._ACTIONS`
 
     :URL /action/<camera_id>/<action>:
-        - **camera_id**: ``Camera ID``
+        - **camera_id**: `Camera ID`
         - **action**: Any action | snapshot | record_start | record_stop 
     '''
     @asynchronous
     def post(self, camera_id, action):
         '''POST request to execute action on camera. 
 
-        :param camera_id: ``Camera ID``.
+        :param camera_id: `Camera ID`.
         :type camera_id: ``int``
         :param action: Action.
         :type action: ``string``
@@ -2000,7 +1999,7 @@ class ActionHandler(BaseHandler):
     def snapshot(self, camera_id):
         '''Do **'snapshot'** action.
 
-        :param camera_id: ``Camera ID``.
+        :param camera_id: `Camera ID`.
         :type camera_id: ``int``
         :rtype: ``JSON``
         '''
@@ -2010,7 +2009,7 @@ class ActionHandler(BaseHandler):
     def record_start(self, camera_id):
         '''Do **'record_start'** action.
 
-        :param camera_id: ``Camera ID``.
+        :param camera_id: `Camera ID`.
         :type camera_id: ``int``
         :rtype: ``JSON``
         '''
@@ -2019,7 +2018,7 @@ class ActionHandler(BaseHandler):
     def record_stop(self, camera_id):
         '''Do **'record_stop'** action.
 
-        :param camera_id: ``Camera ID``.
+        :param camera_id: `Camera ID`.
         :type camera_id: ``int``
         :rtype: ``JSON``
         '''
@@ -2046,7 +2045,7 @@ class RelayEventHandler(BaseHandler):
     '''URL **/_relay_event** handler.
 
     :HTTP arguments:
-        * **event**: 'start', 'stop', 'movie_end', 'picture_save'
+        * **event**  ``start`` | ``stop`` | ``movie_end`` | ``picture_save``
         * **thread_id**
         * **filename**
 
@@ -2108,6 +2107,11 @@ class RelayEventHandler(BaseHandler):
         self.finish_json()
     
     def upload_media_file(self, filename, camera_id, camera_config):
+        ''' Upload to configured ``@upload_service`` service.
+
+        Creates a new :func:``.uploadservices.upload_media_file`` task.
+
+        '''
         service_name = camera_config['@upload_service']
         
         tasks.add(5, uploadservices.upload_media_file, tag='upload_media_file(%s)' % filename,
@@ -2160,10 +2164,10 @@ class UpdateHandler(BaseHandler):
     '''Update versions.
 
     HTTP GET:
-        :URL /update: Finds available versions using :func:`motioneye.update.compare_versions`
+        :URL /update: Finds available versions using :func:`.update.compare_versions`
     
     HTTP POST:
-        :URL /update: Performs the update using :func:`motioneye.update.perform_update`.
+        :URL /update: Performs the update using :func:`.update.perform_update`.
    
     '''
     @BaseHandler.auth(admin=True)
@@ -2213,12 +2217,12 @@ class PowerHandler(BaseHandler):
             self.reboot()
     
     def shut_down(self):
-        '''Schedule :func:`motioneye.powerctl.shut_down` call.'''
+        '''Schedule :func:`.powerctl.shut_down` call.'''
         io_loop = IOLoop.instance()
         io_loop.add_timeout(datetime.timedelta(seconds=2), powerctl.shut_down)
 
     def reboot(self):
-        '''Schedule :func:`motioneye.powerctl.reboot` call.'''
+        '''Schedule :func:`.powerctl.reboot` call.'''
         io_loop = IOLoop.instance()
         io_loop.add_timeout(datetime.timedelta(seconds=2), powerctl.reboot)
 
@@ -2235,8 +2239,8 @@ class VersionHandler(BaseHandler):
         :Template: ``version.html``
 
         :Context:
-            - os_version: :func:`motioneye.update.get_os_version`
-            - motion_version: :func:`motioneye.motionctl.find_motion`
+            - os_version: :func:`.update.get_os_version`
+            - motion_version: :func:`.motionctl.find_motion`
             - hostname: :func:`socket.gethostname`
     '''
     def get(self):

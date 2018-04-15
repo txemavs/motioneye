@@ -17,7 +17,7 @@
 
 '''Remove old pictures and movies.
 
-A background process runs :func:`motioneye.mediafiles.cleanup_media`
+A background process runs :func:`.mediafiles.cleanup_media`
 '''
 
 import datetime
@@ -36,7 +36,7 @@ _process = None
 
 
 def start():
-    '''Start cleaning every :data:`motioneye.settings.CLEANUP_INTERVAL`
+    '''Start cleaning every :data:`.settings.CLEANUP_INTERVAL`
     '''
     if not settings.CLEANUP_INTERVAL:
         return

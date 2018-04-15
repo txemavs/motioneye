@@ -36,9 +36,9 @@ _interval_by_camera_id = {}
 def get_monitor_info(camera_id):
     '''Get camera information.
 
-    Used in :meth:`motioneye.handlers.PictureHandler.current`
+    Used in :meth:`.handlers.PictureHandler.current`
 
-    :param command: ``Camera ID``
+    :param command: `Camera ID`
     :type command: ``int``   
     :returns: Monitor info
     :rtype: ``list``

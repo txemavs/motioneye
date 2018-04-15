@@ -177,7 +177,7 @@ def _log_request(handler):
         request_time = 1000.0 * handler.request.request_time()
         log_method("%d %s %.2fms", handler.get_status(),
                    handler._request_summary(), request_time)
-#: URL mapping: see :mod:`motioneye.handlers` 
+#: URL mapping: see :mod:`.handlers` 
 handler_mapping = [
     (r'^/$', handlers.MainHandler),
     (r'^/manifest.json$', handlers.ManifestHandler),
@@ -325,9 +325,9 @@ def make_media_folders():
 
 
 def start_motion():
-    ''' Call :func:`motioneye.motionctl.start`.
+    ''' Call :func:`.motionctl.start`.
 
-    Check is running every :data:`motioneye.settings.MOTION_CHECK_INTERVAL` seconds.
+    Check is running every :data:`.settings.MOTION_CHECK_INTERVAL` seconds.
     '''
     import config
     import motionctl
@@ -381,15 +381,15 @@ def run():
     '''Run Motioneye and create a new :class:`tornado.web.Application`
 
     Calls:
-        - :func:`motioneye.server.configure_signals`
-        - :func:`motioneye.server.make_media_folders`
-        - :func:`motioneye.smbctl.update_mounts` if :data:`motioneye.settings.SMB_SHARES`
-        - :func:`motioneye.server.start_motion`
-        - :func:`motioneye.cleanup.start`
-        - :func:`motioneye.wsswitch.start`
-        - :func:`motioneye.tasks.start`
-        - :func:`motioneye.mjpgclient.start`
-        - :func:`motioneye.smbctl.start`
+        - :func:`.server.configure_signals`
+        - :func:`.server.make_media_folders`
+        - :func:`.smbctl.update_mounts` if :data:`.settings.SMB_SHARES`
+        - :func:`.server.start_motion`
+        - :func:`.cleanup.start`
+        - :func:`.wsswitch.start`
+        - :func:`.tasks.start`
+        - :func:`.mjpgclient.start`
+        - :func:`.smbctl.start`
     '''
 
     import cleanup
@@ -464,7 +464,7 @@ def run():
 
 
 def main(parser, args, command):
-    '''Start or stop a :class:`motioneye.server.Daemon` or simply call :func:`motioneye.server.run`
+    '''Start or stop a :class:`.server.Daemon` or simply call :func:`.server.run`
 
     :param parser: Parser
     :type parser: ``argparse.ArgumentParser``
@@ -474,9 +474,9 @@ def main(parser, args, command):
     :type command: ``string``
 
     Calls:
-        - :func:`motioneye.server.parse_options`
-        - :func:`motioneye.meyectl.configure_logging`
-        - :func:`motioneye.meyectl.configure_tornado`
+        - :func:`.server.parse_options`
+        - :func:`.meyectl.configure_logging`
+        - :func:`.meyectl.configure_tornado`
     '''
     import meyectl
     

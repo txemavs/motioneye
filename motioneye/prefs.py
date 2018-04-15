@@ -15,15 +15,28 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 
-'''Preferences file.'''
+'''Web UI preferences.
+
+Motioneye preferences
+---------------------
+   
+    :prefs.json:
+        * ``layout_columns`` 3
+        * ``fit_frames_vertically`` True
+        * ``layout_rows`` 1
+        * ``framerate_factor`` 1
+        * ``resolution_factor`` 1
+
+'''
 import json
 import logging
 import os.path
 
 import settings
 
-
+#: Preferences file
 _PREFS_FILE_NAME = 'prefs.json'
+#: Default preferences
 _DEFAULT_PREFS = {
     'layout_columns': 3,
     'fit_frames_vertically': True,
@@ -32,10 +45,12 @@ _DEFAULT_PREFS = {
     'resolution_factor': 1
 }
 
+#: Global preferences dictionary.
 _prefs = None
 
 
 def _load():
+    '''File :data:`.settings.CONF_PATH` / :data:`_PREFS_FILE_NAME` read.'''
     global _prefs
     
     _prefs = {}
@@ -67,6 +82,7 @@ def _load():
 
 
 def _save():
+    '''Save preferences to :data:`.settings.CONF_PATH` / :data:`_PREFS_FILE_NAME`.'''
     file_path = os.path.join(settings.CONF_PATH, _PREFS_FILE_NAME)
     
     logging.debug('saving preferences to "%s"...' % file_path)
@@ -90,6 +106,12 @@ def _save():
 
 
 def get(username, key=None):
+    '''Get preference.
+
+    :param key: Preference
+    :type key: ``string``
+    :returns value: Value
+    '''
     if _prefs is None:
         _load()
 
@@ -104,6 +126,12 @@ def get(username, key=None):
 
 
 def set(username, key, value):
+    '''Set preference.
+
+    :param key: Preference
+    :type key: ``string``
+    :param value: Value
+    '''
     if _prefs is None:
         _load()
 

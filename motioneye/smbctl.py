@@ -32,15 +32,18 @@ import settings
 
 
 def start():
+    '''Call :func:`_check_mounts`'''
     io_loop = IOLoop.instance()
     io_loop.add_timeout(datetime.timedelta(seconds=settings.MOUNT_CHECK_INTERVAL), _check_mounts)
 
 
 def stop():
+    '''Call :func:`_umount_all`'''
     _umount_all()
 
 
 def find_mount_cifs():
+    '''Find which mount.cifs'''
     try:
         return subprocess.check_output(['which', 'mount.cifs'], stderr=utils.DEV_NULL).strip()
     
@@ -49,6 +52,17 @@ def find_mount_cifs():
 
 
 def make_mount_point(server, share, username):
+    ''' Mount shared disk.
+
+    At directory :data:`.settings.SMB_MOUNT_ROOT`
+
+    :param server: Server
+    :type server: ``string``
+    :param share: Share
+    :type share: ``string``
+    :param username: Username
+    :type username: ``string``
+    '''
     server = re.sub('[^a-zA-Z0-9]', '_', server).lower()
     share = re.sub('[^a-zA-Z0-9]', '_', share).lower()
     
@@ -63,6 +77,17 @@ def make_mount_point(server, share, username):
 
 
 def list_mounts():
+    '''List mounts.
+
+    Mount dictionary keys:
+        - server
+        - share
+        - username
+        - mount_point
+
+    :returns: Dictionaries            
+    :rtype: ``list``
+    '''
     logging.debug('listing smb mounts...')
     
     mounts = []
@@ -178,6 +203,8 @@ def test_share(server, share, username, password, root_directory):
 
 
 def _mount(server, share, username, password):
+    '''Mount shared disk.
+    '''
     mount_point = make_mount_point(server, share, username)
     
     logging.debug('making sure mount point "%s" exists' % mount_point)
@@ -256,11 +283,14 @@ def _is_motioneye_mount(mount_point):
 
 
 def _umount_all():
+    '''Call :func:`umount` for all :func:`list_mounts`
+    '''
     for mount in list_mounts():
         _umount(mount['server'], mount['share'], mount['username'])
 
 
 def _check_mounts():
+    '''Check mounts every :data:`.settings.MOUNT_CHECK_INTERVAL` seconds.'''
     import motionctl
     
     logging.debug('checking SMB mounts...')

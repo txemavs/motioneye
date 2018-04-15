@@ -31,11 +31,16 @@ import settings
 
 
 _INTERVAL = 2
+#: State file
 _STATE_FILE_NAME = 'tasks.pickle'
+#: Maximum number of tasks
 _MAX_TASKS = 100
 
-#: we must be sure there's only one extra process that handles all tasks
-#: TODO replace the pool with one simple thread
+''' We must be sure there's only one extra process that handles all tasks.
+
+.. todo::
+    replace the pool with one simple thread
+'''
 _POOL_SIZE = 1
 
 _tasks = []
@@ -65,6 +70,8 @@ def stop():
 
 
 def add(when, func, tag=None, callback=None, **params):
+    '''
+    '''
     if len(_tasks) >= _MAX_TASKS:
         return logging.error('the maximum number of tasks (%d) has been reached' % _MAX_TASKS)
     

@@ -39,7 +39,7 @@ _LOG_FILE = 'motioneye.log'
 def find_command(command):
     '''Find the corresponding script.
 
-    (Used in :mod:`motioneye.config`)
+    (Used in :mod:`.config`)
 
     :param command: Command.
     :type command: ``string``
@@ -66,7 +66,7 @@ def find_command(command):
 def load_settings():
     '''Parse common command line arguments.
 
-    Sets :mod:`motioneye.settings` variables.
+    Sets :mod:`.settings` variables.
     '''
     # parse common command line arguments
     
@@ -208,9 +208,9 @@ def configure_tornado():
     '''Configure ``tornado.curl_httpclient.CurlAsyncHTTPClient``
 
     Called from:
-        - :func:`motioneye.sendmail.main`
-        - :func:`motioneye.webhook.main`
-        - :func:`motioneye.shell.main`
+        - :func:`.sendmail.main`
+        - :func:`.webhook.main`
+        - :func:`.shell.main`
     '''
     from tornado.httpclient import AsyncHTTPClient
 
@@ -281,10 +281,10 @@ def main():
    
     Check command and call module:
 
-        - ``startserver``, ``stopserver``: Calls :func:`motioneye.server.main`
-        - ``sendmail``: Calls :func:`motioneye.sendmail.main`
-        - ``webhook``: Calls :func:`motioneye.webhook.main`
-        - ``shell``: Calls :func:`motioneye.shell.main`
+        - ``startserver``, ``stopserver``: Calls :func:`.server.main`
+        - ``sendmail``: Calls :func:`.sendmail.main`
+        - ``webhook``: Calls :func:`.webhook.main`
+        - ``shell``: Calls :func:`.shell.main`
 
     '''
     for a in sys.argv:
